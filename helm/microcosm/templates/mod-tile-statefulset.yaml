@@ -75,6 +75,8 @@ spec:
                   key: username       
             - name: POSTGRES_PORT
               value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+            - name: INITIAL_TIMEOUT
+              value: '30'
             - name: EXPIRED_DIR
               value: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
             - name: RENDER_EXPIRED_TILES_INTERVAL
