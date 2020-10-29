@@ -4,7 +4,7 @@ This repo contains:
 
 * Containerized OSM tools
 
-* Deployment of the OSM ecosystem using [osm-seed](https://github.com/developmentseed/osm-seed)
+* Deployment of the OSM ecosystem using [MicrocOSM](/microcOSM/README.md)
   
 * Synchronization process of 2 OSM stacks
   * using diff files.
