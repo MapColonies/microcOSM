@@ -2,32 +2,32 @@ FROM ubuntu:14.04
 ENV GOPATH /usr/bin
 RUN apt-get -y update
 RUN apt-get install -y \
-    build-essential \
-    g++ \
-    git-core \
-    libboost-dev \
-    libboost-system-dev \
-    libboost-filesystem-dev \
-    libexpat1-dev \
-    zlib1g-dev \
-    libbz2-dev \
-    libpq-dev \
-    libgeos-dev \
-    libgeos++-dev \
-    libproj-dev \
-    libleveldb-dev \
-    libgeos-dev \
-    libprotobuf-dev \
-    libgeos++-dev \
-    libjson0-dev \
-    curl \
-    wget \
-    unzip \
-    postgresql \
-    postgresql-contrib \
-    python-pip \
-    software-properties-common \
-    python-software-properties 
+  build-essential \
+  g++ \
+  git-core \
+  libboost-dev \
+  libboost-system-dev \
+  libboost-filesystem-dev \
+  libexpat1-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libpq-dev \
+  libgeos-dev \
+  libgeos++-dev \
+  libproj-dev \
+  libleveldb-dev \
+  libgeos-dev \
+  libprotobuf-dev \
+  libgeos++-dev \
+  libjson0-dev \
+  curl \
+  wget \
+  unzip \
+  postgresql \
+  postgresql-contrib \
+  python-pip \
+  software-properties-common \
+  python-software-properties 
 
 # Install awscli  and gsutil  to get the pbf file
 RUN pip install awscli
@@ -62,6 +62,7 @@ WORKDIR /osm
 COPY ./config/${IMPOSM_MAPPING_FILE} ${IMPOSM_MAPPING_FILE}
 COPY ./config/postgis_helpers.sql postgis_helpers.sql
 COPY ./config/postgis_index.sql postgis_index.sql
+COPY ./config/first-osm-import.pbf .
 COPY start.sh start.sh
 COPY scripts scripts
 CMD ./start.sh

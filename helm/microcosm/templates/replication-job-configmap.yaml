@@ -1,0 +1,15 @@
+{{- if .Values.replicationJob.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-replication-job-configmap
+data:
+  default.conf: |-
+    server {
+        root /usr/share/nginx/html/;
+        server_name localhost;
+        listen 80;
+        autoindex on;
+    }
+
+{{- end }}
