@@ -21,7 +21,7 @@ divide_for_days = 1000000
 divide_for_month = 1000
 divide_for_years = 1000
 
-log = JSONLogger('main-debug', additional_fields={'service': 'tiler-osm2pgsql'})
+log = JSONLogger('main-debug', additional_fields={'service': 'osm2pgsql'})
 
 def parse_integer_to_directory_number(integer):
     return "{0:0=3d}".format(integer)
@@ -68,7 +68,7 @@ def has_data():
         except:
             time.sleep(os.environ['OSM2PGSQL_UPDATE_INTERVAL'])
 
-def update_replication_tiles(sequence_number, last_append):
+def update_db_with_replication(sequence_number, last_append):
     for i in range(last_append+1, sequence_number):
         dir1 = parse_integer_to_directory_number(int(i / divide_for_days))
         dir2 = parse_integer_to_directory_number(int(i / divide_for_month))
@@ -91,7 +91,7 @@ def update_replication_tiles(sequence_number, last_append):
                         --hstore \
                         --tag-transform-script /src/openstreetmap-carto.lua \
                         -C 2500 \
-                        --number-processes 4 \
+                        --number-processes 2 \
                         -S /src/openstreetmap-carto.style \
                         {osc} \
                         -e17 \
@@ -99,7 +99,7 @@ def update_replication_tiles(sequence_number, last_append):
             )
 
 def update_state_file(expired_state_file_path, sequence_number, last_append):
-    with open(expired_state_file_path, 'r+') as expired_file:
+    with open(expired_state_file_path, 'w+') as expired_file:
         expired_content = expired_file.read()
 
         sequence_numberFound = re.search('sequenceNumber=.*', expired_content)
@@ -133,11 +133,11 @@ def first_import():
 def update_tiles(sequence_number, last_append):
     expired_state_file_path = os.path.join(expired_directory, "state.txt")
 
-    if (is_file_or_directory(expired_state_file_path)):
-        expired_file = open(f"{expired_directory}/state.txt")
-        expired_file.close()
+    # if (is_file_or_directory(expired_state_file_path)):
+    #     expired_file = open(expired_state_file_path, "w+")
+    #     expired_file.close()
 
-    update_replication_tiles(sequence_number, last_append)
+    update_db_with_replication(sequence_number, last_append)
     update_state_file(expired_state_file_path, sequence_number, last_append)
 
 def update_data_loop():
@@ -167,7 +167,7 @@ def update_data_loop():
         if (sequence_number != last_append):
             update_tiles(sequence_number, last_append)
 
-log.info('tiler-osm2pgsql container started')
+log.info('osm2pgsql container started')
 
 if pg_is_ready():
     if (has_data() <= 5):

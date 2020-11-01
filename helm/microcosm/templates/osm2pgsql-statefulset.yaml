@@ -28,7 +28,7 @@ spec:
         {{- if eq .Values.cloudProvider "minikube" }} 
         image: "{{ .Values.osm2pgsql.image.minikube }}"
         {{- end }}
-        command: ['./start.sh']
+        command: ['./run.py']
         {{- if .Values.osm2pgsql.resources.enabled }}
         resources:
           requests:

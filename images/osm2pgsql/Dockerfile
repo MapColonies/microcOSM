@@ -16,8 +16,11 @@ RUN apt -y install make \
   lua5.2 \
   liblua5.2-dev \
   git-core \
-  postgresql-client \ 
+  postgresql-client \
+  python3-pip \
   wget
+COPY ./requirements.txt .
+RUN pip3 install -r requirements.txt
 ENV workdir /src
 WORKDIR $workdir
 RUN git clone git://github.com/openstreetmap/osm2pgsql.git && \
@@ -28,9 +31,10 @@ RUN git clone git://github.com/openstreetmap/osm2pgsql.git && \
   cmake .. && \
   make && \
   make install
-COPY ./start.sh .
+RUN mkdir /var/log/osm-seed
 COPY ./config/openstreetmap-carto.lua .
 COPY ./config/openstreetmap-carto.style .
 COPY ./config/first-osm-import.osm .
-RUN chmod a+x $workdir/start.sh
-CMD ./start.sh
+COPY ./run.py .
+RUN chmod a+x $workdir/run.py
+CMD ./run.py
