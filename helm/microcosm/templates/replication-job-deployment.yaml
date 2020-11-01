@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-replication-job-nginx
-          image: nginx:1.19.2-alpine
+          image: {{ .Values.images.nginx }}
           livenessProbe:
             httpGet:
               path: /
