@@ -1,5 +1,5 @@
 {{- if .Values.imposm.enabled -}}
-{{- if .Values.imposm.persistenceDisk.enabled -}}
+{{- if .Values.imposm.persistenceDisk.data.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -59,10 +59,10 @@ spec:
             value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
           - name: IMPOSM_IMPORT_FROM
             value: {{ .Values.imposm.env.TILER_IMPORT_FROM }}
-          - name: IMPOSM_IMPORT_PBF_URL
-            value: {{ .Values.imposm.env.TILER_IMPORT_PBF_URL }}
-          # - name: TILER_IMPORT_LIMIT
-          #   value: {{ .Values.imposm.env.TILER_IMPORT_LIMIT }}
+          - name: IMPOSM_REPLICATION_INTERVAL
+            value: {{ .Values.imposm.env.IMPOSM_REPLICATION_INTERVAL }}
+          - name: IMPOSM_REPLICATION_URL
+            value: http://{{ .Release.Name }}-replication-job/
           - name: CLOUDPROVIDER
             value: {{ .Values.cloudProvider }}
           # In case cloudProvider=aws
@@ -71,23 +71,23 @@ spec:
             value: {{ .Values.AWS_S3_BUCKET }}
           {{- end }}
         volumeMounts:
-        - mountPath: {{ .Values.imposm.env.REPLICATION_DIRECTORY }}
-          name: replication-storage
-        - mountPath: {{ .Values.imposm.persistenceDisk.mountPath }}
-          name: imposm-storage
+        - mountPath: {{ .Values.imposm.persistenceDisk.data.mountPath }}
+          name: imposm-data
+        - mountPath: {{ .Values.imposm.persistenceDisk.expired.mountPath }}
+          name: imposm-expired
       restartPolicy: Always
       volumes:
-        - name: replication-storage
-        {{- if .Values.replicationJob.persistenceDisk.enabled }}
+        - name: imposm-data
+        {{- if .Values.imposm.persistenceDisk.data.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-replication-job-pv-claim
+            claimName: {{ .Release.Name }}-imposm-data-pv-claim
         {{- else }}
           emptyDir: {}
         {{- end }}
-        - name: imposm-storage
-        {{- if .Values.imposm.persistenceDisk.enabled }}
+        - name: imposm-expired
+        {{- if .Values.imposm.persistenceDisk.expired.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-imposm-pv-claim
+            claimName: {{ .Release.Name }}-imposm-expired-pv-claim
         {{- else }}
           emptyDir: {}
         {{- end }}

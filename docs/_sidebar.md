@@ -11,6 +11,10 @@
   </div>
 </div>
 
+* [MicrocOSM](/microcOSM/README.md)
+  * [Installation Guide](/microcOSM/InstallationGuide/README.md)
+    * [Aws](/microcOSM/InstallationGuide/aws/README.md)
+    * [Minikube](/microcOSM/InstallationGuide/minikube/README.md)
 * OSM CLI Tools
   * [osm2pgsql](/osm2pgsql/README.md)
   * [osmosis](/osmosis/README.md)
