@@ -33,13 +33,6 @@ function getData () {
             PBFCloudPath=$(tail -n +1 $stateFile)
             aws s3 cp $PBFCloudPath $PBFFile
         fi
-        # Google storage
-        if [ $CLOUDPROVIDER == "gcp" ]; then 
-            # Get the state.txt file from GS
-            gsutil cp $GCP_STORAGE_BUCKET/planet/full-history/$stateFile .
-            PBFCloudPath=$(tail -n +1 $stateFile)
-            gsutil cp $PBFCloudPath $PBFFile
-        fi
     fi
 }
 

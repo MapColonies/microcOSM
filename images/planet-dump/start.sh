@@ -31,15 +31,6 @@ if [ $CLOUDPROVIDER == "aws" ]; then
 	aws s3 cp $stateFile $AWS_S3_BUCKET/planet/full-history/$stateFile --acl public-read
 fi
 
-# Google Storage
-if [ $CLOUDPROVIDER == "gcp" ]; then
-	# Save the path file
-	echo "$GCP_STORAGE_BUCKET/planet/full-history/$planetPBFFile" >>$stateFile
-	# Upload to GS
-	gsutil cp $planetPBFFile $GCP_STORAGE_BUCKET/planet/full-history/$planetPBFFile
-	gsutil cp $stateFile $GCP_STORAGE_BUCKET/planet/full-history/$stateFile
-fi
-
 # Clean backups older than 7 days
 
 if [ $CLEAN_BACKUPS == "true" ]; then
@@ -59,19 +50,5 @@ if [ $CLEAN_BACKUPS == "true" ]; then
 			aws s3 rm $AWS_S3_BUCKET/planet/full-history/history-latest-$file.pbf
 		done <output
 		rm output
-	fi
-	# Google Storage
-	if [ $CLOUDPROVIDER == "gcp" ]; then
-		# Filter files from GS
-		gsutil ls $GCP_STORAGE_BUCKET/planet/full-history/ |
-			awk -F""$GCP_STORAGE_BUCKET"/planet/full-history/history-latest-" '{$1=$1}1' |
-			awk '/pbf/{print}' |
-			awk -F".pbf" '{$1=$1}1' |
-			awk '$1 < "'"$DATE"'" {print $0}' |
-			sort -n >output
-		# Delete filtered files
-		while read file; do
-			gsutil rm $GCP_STORAGE_BUCKET/planet/full-history/history-latest-$file.pbf
-		done <output
 	fi
 fi

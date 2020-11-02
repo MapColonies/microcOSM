@@ -22,13 +22,6 @@ if [ ! -f $workingDirectory/state.txt ]; then
 			aws s3 cp $AWS_S3_BUCKET$REPLICATION_FOLDER/state.txt $workingDirectory/state.txt
 		fi
 	fi
-	if [ $CLOUDPROVIDER == "gcp" ]; then
-		gsutil ls $GCP_STORAGE_BUCKET$REPLICATION_FOLDER/state.txt
-		if [[ $? -eq 0 ]]; then
-			echo "File exist, let's get it"
-			gsutil cp $GCP_STORAGE_BUCKET$REPLICATION_FOLDER/state.txt $workingDirectory/state.txt
-		fi
-	fi
 fi
 # Creating the replication file
 osmosis -q \
@@ -48,12 +41,6 @@ while true; do
 	if [ $CLOUDPROVIDER == "aws" ]; then
 		# Sync to S3
 		aws s3 sync $workingDirectory $AWS_S3_BUCKET$REPLICATION_FOLDER
-	fi
-
-	# Google Storage
-	if [ $CLOUDPROVIDER == "gcp" ]; then
-		# Sync to GS, Need to test,if the files do not exist  in the folder it will remove into the bucket too.
-		gsutil rsync -r $workingDirectory $GCP_STORAGE_BUCKET$REPLICATION_FOLDER
 	fi
 	sleep 1m
 done

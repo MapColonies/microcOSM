@@ -25,15 +25,11 @@ Required environment variables:
 
 If you are setting up the variable TILER_IMPORT_PROM=`microcosm` you should fill following env variables according to which cloud provider you are going to use
 
-- `CLOUDPROVIDER`, eg. `aws` or `gcp`
+- `CLOUDPROVIDER`, eg. `aws`
 
 In case AWS:
 
 - `AWS_S3_BUCKET` e.g `s3://microcosm-test`
-
-In case GCP:
-
-- `GCP_STORAGE_BUCKET` e.g `gs://microcosm-test`
 
 Note: In case you use the `TILER_IMPORT_PROM`=`microcosm` you need to make public the minute replication files to update the DB with the recent changes.
 

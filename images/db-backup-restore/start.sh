@@ -19,15 +19,6 @@ if [ "$DB_ACTION" == "backup" ]; then
 		echo "$AWS_S3_BUCKET/database/$backupFile" >$stateFile
 		aws s3 cp $stateFile $AWS_S3_BUCKET/database/$stateFile
 	fi
-
-	# Google Storage
-	if [ "$CLOUDPROVIDER" == "gcp" ]; then
-		# Upload to GS
-		gsutil cp $backupFile $GCP_STORAGE_BUCKET/database/$backupFile
-		# The file state.txt contain the latest version of DB path
-		echo "$GCP_STORAGE_BUCKET/database/$backupFile" >$stateFile
-		gsutil cp $stateFile $GCP_STORAGE_BUCKET/database/$stateFile
-	fi
 fi
 
 # Restoring DataBase
@@ -56,19 +47,5 @@ if [ $CLEAN_BACKUPS == "true" ]; then
 			aws s3 rm $AWS_S3_BUCKET/database/microcosm-$file.sql.gz
 		done <output
 		rm output
-	fi
-	# Google Storage
-	if [ $CLOUDPROVIDER == "gcp" ]; then
-		# Filter files from GS
-		gsutil ls $GCP_STORAGE_BUCKET/database/ |
-			awk -F""$GCP_STORAGE_BUCKET"/database/microcosm-" '{$1=$1}1' |
-			awk '/sql.gz/{print}' |
-			awk -F".sql.gz" '{$1=$1}1' |
-			awk '$1 < "'"$DATE"'" {print $0}' |
-			sort -n >output
-		# Delete filtered files
-		while read file; do
-			gsutil rm $GCP_STORAGE_BUCKET/database/microcosm-$file.sql.gz
-		done <output
 	fi
 fi

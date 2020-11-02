@@ -12,9 +12,4 @@
            You can watch the status of by running 'kubectl get svc -w {{ template "osm-seed.fullname" . }}'
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "osm-seed.fullname" . }}-web -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   echo http://$SERVICE_IP
-{{- else if contains "gcp" .Values.cloudProvider }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch the status of by running 'kubectl get svc -w {{ template "osm-seed.fullname" . }}'
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "osm-seed.fullname" . }}-web -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  echo http://$SERVICE_IP
 {{- end }}
