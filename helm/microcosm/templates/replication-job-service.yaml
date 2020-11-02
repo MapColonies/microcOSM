@@ -1,0 +1,24 @@
+{{- if .Values.replicationJob.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-replication-job
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: replication-job-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if eq .Values.cloudProvider "minikube" }}
+  type: NodePort
+  {{- end }}
+  ports:
+    - port: 80
+      targetPort: 80
+      # protocol: TCP
+      # name: http
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-replication-job
+{{- end }}

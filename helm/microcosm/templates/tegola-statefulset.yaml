@@ -85,15 +85,28 @@ spec:
               value: {{ quote .Values.tegola.env.TILER_CACHE_AWS_SECRET_ACCESS_KEY }}
             - name: TILER_CACHE_MAX_ZOOM
               value: {{ quote .Values.tegola.env.TILER_CACHE_MAX_ZOOM }}
+            - name: EXPIRE_TILES_DIR
+              value: {{ .Values.tegola.env.EXPIRE_TILES_DIR }}
+            - name: TILER_CACHE_UPDATE_INTERVAL
+              value: {{ quote .Values.tegola.env.TILER_CACHE_UPDATE_INTERVAL }}
           volumeMounts:
           - mountPath: /mnt/data
             name: tegola-storage
+          - mountPath: {{ .Values.tegola.env.EXPIRE_TILES_DIR }}
+            name: expired-tiles
       restartPolicy: Always
       volumes:
         - name: tegola-storage
         {{- if .Values.tegola.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-tegola-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: expired-tiles
+        {{- if .Values.imposm.persistenceDisk.expired.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-imposm-expired-pv-claim
         {{- else }}
           emptyDir: {}
         {{- end }}

@@ -1,9 +1,10 @@
 {{- if .Values.imposm.enabled -}}
-{{- if .Values.imposm.persistenceDisk.enabled -}}
+{{- if .Values.imposm.persistenceDisk.data.enabled -}}
+## DATA PV ##
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ .Release.Name }}-imposm-pv
+  name: {{ .Release.Name }}-imposm-data-pv
   labels:
     app: {{ template "microcosm.name" . }}
     component: imposm-pd
@@ -11,31 +12,31 @@ metadata:
     release: {{ .Release.Name }}
 spec:
   capacity:
-    storage: {{ .Values.imposm.persistenceDisk.storageSize }}
+    storage: {{ .Values.imposm.persistenceDisk.data.storageSize }}
   accessModes:
-    - {{ .Values.imposm.persistenceDisk.accessMode }}
+    - {{ .Values.imposm.persistenceDisk.data.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
   {{- if eq .Values.cloudProvider "aws" }}
   storageClassName: {{ .Values.efs.storageClass }} 
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
+    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.imposm.persistenceDisk.data.subPath }}
   {{- end }}
   # minikube provider
   {{- if eq .Values.cloudProvider "minikube" }}
   storageClassName: ""
   hostPath:
-    path: {{ .Values.minikubeHostPath }}
+    path: {{ .Values.minikubeHostPath }}/{{ .Values.imposm.persistenceDisk.data.subPath }}
   {{- end }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Release.Name }}-imposm-pv-claim
+  name: {{ .Release.Name }}-imposm-data-pv-claim
   labels:
     app: {{ template "microcosm.name" . }}
-    component: db-pd
+    component: imposm-pd
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
@@ -45,11 +46,66 @@ spec:
   {{- if eq .Values.cloudProvider "minikube" }}
   storageClassName: ''
   {{- end }}
-  volumeName: {{ .Release.Name }}-imposm-pv
+  volumeName: {{ .Release.Name }}-imposm-data-pv
   accessModes:
-    - {{ .Values.imposm.persistenceDisk.accessMode }}
+    - {{ .Values.imposm.persistenceDisk.data.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.imposm.persistenceDisk.storageSize }}
+      storage: {{ .Values.imposm.persistenceDisk.data.storageSize }}
+{{- end }}
+---
+{{- if .Values.imposm.persistenceDisk.expired.enabled -}}
+## expired PV
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-imposm-expired-pv
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: imposm-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.imposm.persistenceDisk.expired.storageSize }}
+  accessModes:
+    - {{ .Values.imposm.persistenceDisk.expired.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  # AWS Provider
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }} 
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.imposm.persistenceDisk.expired.subPath }}
+  {{- end }}
+  # minikube provider
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ .Values.minikubeHostPath }}/{{ .Values.imposm.persistenceDisk.expired.subPath }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-imposm-expired-pv-claim
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: imposm-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }}
+  {{- end }}
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ''
+  {{- end }}
+  volumeName: {{ .Release.Name }}-imposm-expired-pv
+  accessModes:
+    - {{ .Values.imposm.persistenceDisk.expired.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.imposm.persistenceDisk.expired.storageSize }}
 {{- end }}
 {{- end }}
