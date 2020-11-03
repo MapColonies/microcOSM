@@ -31,8 +31,6 @@ RUN apt-get install -y \
 
 # Install awscli  and gsutil  to get the pbf file
 RUN pip install awscli
-RUN curl -sSL https://sdk.cloud.google.com | bash
-RUN ln -f -s /root/google-cloud-sdk/bin/gsutil /usr/bin/gsutil
 
 # Gdal is required to process the natural earth files
 RUN add-apt-repository ppa:ubuntugis/ppa

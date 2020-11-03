@@ -25,25 +25,7 @@ echo "\"connection\": \"postgis://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HO
 echo "\"mapping\": \"$IMPOSM_MAPPING_FILE\","  >> config.json
 echo "\"replication_url\": \"$IMPOSM_REPLICATION_URL\","  >> config.json
 echo "\"replication_interval\": \"$IMPOSM_REPLICATION_INTERVAL\""  >> config.json
-# echo "\"diff_state_before\": \"$diffStateBefore\""  >> config.json
 echo "}" >> config.json
-
-# function getData () {
-#     # Import from pubic url, ussualy it come from osm
-#     if [ $IMPOSM_IMPORT_FROM == "osm" ]; then 
-#         wget $IMPOSM_IMPORT_PBF_URL -O $PBFFile
-#     fi
-
-#     if [ $IMPOSM_IMPORT_FROM == "osmseed" ]; then 
-#         if [ $CLOUDPROVIDER == "aws" ]; then 
-#             # Get the state.txt file from S3
-#             aws s3 cp $AWS_S3_BUCKET/planet/full-history/$stateFile .
-#             PBFCloudPath=$(tail -n +1 $stateFile)
-#             aws s3 cp $PBFCloudPath $PBFFile
-#         fi
-#     fi
-# }
-
 
 function initializeDatabase () {
     echo "Execute the missing functions"
@@ -75,21 +57,12 @@ function importData () {
 }
 
 function updateData () {
-    # if [ -z "$TILER_IMPORT_LIMIT" ]; then
-        imposm run -config config.json & 
-        while true
-        do 
-            echo "Updating...$(date +%F_%H-%M-%S)"
-            sleep 1m
-        done
-    # else
-    #     imposm run -config config.json -limitto /mnt/data/$limitFile &
-    #     while true
-    #     do 
-    #         echo "Updating...$(date +%F_%H-%M-%S)"
-    #         sleep 1m
-    #     done
-    # fi
+    imposm run -config config.json & 
+    while true
+    do 
+        echo "Updating...$(date +%F_%H-%M-%S)"
+        sleep 1m
+    done
 }
 
 echo "Connecting... to postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB"
@@ -111,10 +84,6 @@ while "$flag" = true; do
         else
             echo "Start importing the data"
             initializeDatabase
-            # if [ -n "$IMPOSM_IMPORT_PBF_URL" ]; then
-            #     echo "Import PBF data to DB"
-            #     getData
-            # else
 
             until $(curl --output /dev/null --silent --head --fail ${IMPOSM_REPLICATION_URL}000/000/000.state.txt); do
               printf 'waiting for state file...'
@@ -122,7 +91,8 @@ while "$flag" = true; do
             done
 
             curl --output /mnt/data/diff/last.state.txt ${IMPOSM_REPLICATION_URL}000/000/000.state.txt
-            dateString=$(sed '4q;d' /mnt/data/diff/last.state.txt | sed 's/\\//g' | cut -d "=" -f2-)
+            timestampLineIndexSedParam=$(cut -d ':' -f 1 <<< $(cat /mnt/data/diff/last.state.txt| grep -n timestamp))"q:d"
+            dateString=$(cut -d '=' -f 2 <<< $(cat ./state.txt| grep -n timestamp))
 
             touch -d $dateString $PBFFile 
             # fi

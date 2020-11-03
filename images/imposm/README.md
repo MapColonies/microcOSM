@@ -18,7 +18,6 @@ Required environment variables:
 
   **Env variables to import the files**
 
-- `TILER_IMPORT_FROM` e.g `osm` or `microcosm`
 - `IMPOSM_IMPORT_PBF_URL` eg `http://download.geofabrik.de/south-america/peru-latest.osm.pbf`
 - `TILER_IMPORT_LIMIT` geojson url
 - `IMPOSM_MAPPING_FILE` imposm yaml\json mapping file. the `vector-tiles-db` will be mapped according to
