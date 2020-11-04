@@ -35,6 +35,6 @@ RUN mkdir /var/log/osm-seed
 COPY ./config/openstreetmap-carto.lua .
 COPY ./config/openstreetmap-carto.style .
 COPY ./config/first-osm-import.osm .
-COPY ./run.py .
-RUN chmod a+x $workdir/run.py
-CMD ./run.py
+COPY ./start.py .
+RUN chmod a+x $workdir/start.py
+CMD ./start.py
