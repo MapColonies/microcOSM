@@ -63,11 +63,10 @@ def run_osm2pgsql_command(*argv):
                                stderr=subprocess.STDOUT,
                                universal_newlines=True,
                                shell=True)
-    print(process.args)
     for stdout_line in get_command_stdout_iter(process):
-        process_log.info(stdout_line)
+        if stdout_line:
+            process_log.info(stdout_line.strip())
     process.stdout.close()
-    print('waiting for process lol')
     return_code = process.wait()
 
     if (return_code != 0):
