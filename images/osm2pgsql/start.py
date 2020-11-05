@@ -42,16 +42,6 @@ process_log = JSONLogger('main-debug', config={'handlers': {
     'file': {'filename': '/var/log/osm-seed/process.log'}}}, additional_fields={'service': 'osm2pgsql', 'description': 'process logs'})
 
 
-# def pg_is_ready():
-#     ready = False
-#     log.info('waiting for pg...')
-#     while not ready:
-#         res = os.popen(f'pg_isready -h {PGHOST} -p 5432').read()
-#         if (res.find('accepting connections') > 0):
-#             ready = True
-#             log.info('pg is ready for connections')
-#     return ready
-
 def get_command_stdout_iter(process):
     for stdout_line in iter(process.stdout.readline, ''):
         yield stdout_line
@@ -73,25 +63,6 @@ def run_osm2pgsql_command(*argv):
         log.error(
             'osm2pgsql command failed with error code {0}'.format(return_code))
         sys.exit(1)
-
-    # while True:
-    #     output = process.stdout.readline()
-    #     process_log.info(output.strip())
-    #     # Do something else
-    #     return_code = process.poll()
-    #     if return_code is None:
-    #         continue
-
-    #     # Process has finished, read rest of the output
-    #     if return_code > 0:
-    #         log.error(
-    #             'osm2pgsql has exited with return code {0}'.format(return_code))
-    #         for output in process.stdout.readlines():
-    #             log.error(output.strip())
-    #         sys.exit(1)
-    #     else:
-    #         for output in process.stdout.readlines():
-    #             process_log.info(output.strip())
 
 
 def db_init():
