@@ -28,7 +28,6 @@ spec:
         {{- if eq .Values.cloudProvider "minikube" }} 
         image: "{{ .Values.imposm.image.minikube }}"
         {{- end }}
-        command: ['./start.sh']
         {{- if .Values.imposm.resources.enabled }}
         resources:
           requests:
@@ -57,14 +56,16 @@ spec:
             value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
           - name: CONFIG_REPLICATION_INTERVAL
             value: {{ .Values.imposm.env.CONFIG_REPLICATION_INTERVAL }}
-          - name: CONFIG_REPLICATION_URL
+          - name: IMPOSM_REPLICATION_URL
             value: http://{{ .Release.Name }}-replication-job/
           - name: CONFIG_EXPIRED_TILES_ZOOM
-            value: {{ .Values.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
-          - name: CONFIG_CACHE_DIR
-            value: {{ .Values.imposm.env.CONFIG_CACHE_DIR }}
-          - name: CONFIG_DIFF_DIR
-            value: {{ .Values.imposm.env.CONFIG_DIFF_DIR }}
+            value: {{ quote .Values.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
+          - name: CONFIG_EXPIRED_TILES_DIR
+            value: {{ .Values.imposm.persistenceDisk.expired.mountPath }}
+          # - name: CONFIG_CACHE_DIR
+          #   value: {{ .Values.imposm.env.CONFIG_CACHE_DIR }}
+          # - name: CONFIG_DIFF_DIR
+          #   value: {{ .Values.imposm.env.CONFIG_DIFF_DIR }}
           - name: CLOUDPROVIDER
             value: {{ .Values.cloudProvider }}
           # In case cloudProvider=aws

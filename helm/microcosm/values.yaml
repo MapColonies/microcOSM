@@ -235,21 +235,19 @@ imposm:
     aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-imposm:v1'
     minikube: 'microcosm-imposm:v1'
   env:
-    CONFIG_CACHE_DIR: /mnt/data/imposm/cache
-    CONFIG_EXPIRED_TILES_DIR: /mnt/data/imposm/expired-tiles
     CONFIG_EXPIRED_TILES_ZOOM: 14
     CONFIG_REPLICATION_INTERVAL: 1m
   persistenceDisk:
     data:
       enabled: true
       accessMode: ReadWriteOnce
-      mountPath: /mnt/data/imposm
+      mountPath: /mnt/data/
       subPath: imposm-data
       storageSize: 5Gi
     expired:
       enabled: true
       accessMode: ReadWriteMany
-      mountPath: /mnt/data/imposm/expired-tiles
+      mountPath: /mnt/expired-tiles
       subPath: imposm-expired
       storageSize: 5Gi
   resources:
