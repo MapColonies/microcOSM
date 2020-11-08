@@ -1,11 +1,15 @@
-import re, subprocess, sys, time
+import re
+import subprocess
+import sys
+import time
 from os import path, linesep, environ, mkdir
 from jsonlogger.logger import JSONLogger
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
 
 INITIAL_TIMEOUT = int(environ.get('INITIAL_TIMEOUT', 30))
-RENDER_EXPIRED_TILES_INTERVAL = float(environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
+RENDER_EXPIRED_TILES_INTERVAL = float(
+    environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
 EXPIRED_DIR = environ.get('EXPIRED_DIR', '/mnt/expired')
 
 environ['PGHOST'] = environ['POSTGRES_HOST']
@@ -25,18 +29,21 @@ def run_subprocess(args, log_output=True):
         subprocess.CompletedProcess: subprocess response object
     """
     try:
-        process = subprocess.run(args, shell=True, encoding='utf8', check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(environ))
+        process = subprocess.run(args, shell=True, encoding='utf8', check=True,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(environ))
     except (subprocess.CalledProcessError, Exception) as ex:
         log.error(fr'The subprocess raised an error: {ex.stderr}')
         raise
     else:
         if log_output:
             if process.stdout and len(process.stdout) > 0:
-                [log.info(log_line) for log_line in process.stdout.split('\n') if len(log_line) > 0]
+                [log.info(log_line) for log_line in process.stdout.split(
+                    '\n') if len(log_line) > 0]
             if process.stderr and len(process.stderr) > 0:
-                [log.error(log_line) for log_line in process.stderr.split('\n') if len(log_line) > 0]
+                [log.error(log_line) for log_line in process.stderr.split(
+                    '\n') if len(log_line) > 0]
         return process
-    
+
 
 def extract_positivie_integer_value(text, key):
     """
@@ -52,13 +59,15 @@ def extract_positivie_integer_value(text, key):
     found = re.search(fr'{key}=\d+', text)
     if not found:
         return None
-    
+
     value = found.group(0).split('=')[1]
     try:
         integer_value = int(value)
-        if integer_value < 0: raise ValueError()
+        if integer_value < 0:
+            raise ValueError()
     except ValueError:
-        raise ValueError(f'"{key}=" must be followed by a positive integer in text')
+        raise ValueError(
+            f'"{key}=" must be followed by a positive integer in text')
 
     return integer_value
 
@@ -80,15 +89,17 @@ def unique_tiles_from_files(start, end, directory):
     # replication directory structure 004/215/801.state.txt corresponds to index 4,215,801
     while i <= end:
         path_parts = [directory]
-        path_parts += [get_path_part_from_sequence_number(i, denominator) for denominator in SEQUENCE_PATH_DENOMINATORS]
+        path_parts += [get_path_part_from_sequence_number(
+            i, denominator) for denominator in SEQUENCE_PATH_DENOMINATORS]
         path_parts[-1] += '-expire.list'
         expired_tiles_file_path = path.sep.join(path_parts)
-        
+
         try:
             with open(expired_tiles_file_path, 'r') as expired_tiles_file:
                 expired_tiles += expired_tiles_file.read().splitlines()
         except FileNotFoundError:
-            log.warn(f'file {expired_tiles_file_path} not found for sequence number {i}')
+            log.warn(
+                f'file {expired_tiles_file_path} not found for sequence number {i}')
         except:
             raise
         finally:
@@ -111,83 +122,70 @@ def get_path_part_from_sequence_number(sequence_number, denominator):
     return '{:03d}'.format(int(sequence_number / denominator))[-3:]
 
 
-def get_sequence_range(text):
-    """
-    Extracts the sequenceNumber and lastRendered values from state file
-    Args:
-        text (str): text to extract sequence values range from
-    Raises:
-        LookupError: [description]
-    Returns:
-        int: pair of values, a start and an end, of a sequence from lastRendered to sequenceNumber
-    """
-    sequence_number = extract_positivie_integer_value(text, 'sequenceNumber')
-    if not sequence_number: raise LookupError(f'"sequenceNumber=" is not present in file')
-    last_rendered = extract_positivie_integer_value(text, 'lastRendered')
-    if not last_rendered: last_rendered = -1
-
-    return last_rendered + 1, sequence_number
-
-
-def update_currently_expired_file(currently_expired_tiles_file_path, expired_tiles):
+def update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles):
     """
     Updates the currently expired list of tiles file
     Args:
         currently_expired_tiles_file_path (str): path to the currently expired list of tiles file
         expired_tiles (list): list if of tiles to expire
     """
-    if expired_tiles:
-        # write the expired tiles list to a file
-        with open(currently_expired_tiles_file_path, 'w') as currently_expired_file:
+    # write the expired tiles list to a file
+    with open(currently_expired_tiles_file_path, 'w') as currently_expired_file:
+        if expired_tiles:
             currently_expired_file.write(linesep.join(expired_tiles))
 
 
-def update_state_file(state_file_path, sequence_number):
+def update_rendered_state_file(rendered_state_file_path, sequence_number):
     """
-    Updates the state file with an updated state (after tile expiration)
+    Updates the rendered state file with an updated state (after tile expiration)
     Args:
-        state_file_path (str): path to the state file
-        sequence_number (int): current sequence number to update state file with
+        rendered_state_file_path (str): path to the state file
+        sequence_number (int): current sequence number to update rendered state file with
     """
-    with open(state_file_path, 'r+') as expired_file:
-        expired_content = expired_file.read() # the file's content is read again because another process may update values like sequenceNumber
-        found = re.search('lastRendered=.*', expired_content)
-        if found:
-            updated_expired_content = re.sub(r'(?<=lastRendered=)\d+', str(sequence_number), expired_content, 1) # update lastRendered value
-            expired_file.seek(0) # move current file position to the start of the file
-            expired_file.truncate() # remove current file content
-            expired_file.write(updated_expired_content) # write updated content
-        else:
-            expired_file.write(linesep + f'lastRendered={sequence_number}') # insert lastRendered value
+    with open(rendered_state_file_path, 'r+') as rendered_file:
+        rendered_file.write(f'lastRendered={sequence_number}')
 
 
-def expire_tiles(state_file_path, currently_expired_tiles_file_path):
+def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path):
     """
     Call mod_tile's render_expired with tiles that need to be re-rendered
     Args:
-        state_file_path (str): path to a state file that holds the current replication state
+        state_file_path (str): path to a state file that holds the current replication state defined by the sequence number
         currently_expired_tiles_file_path (str): path to currentlyExpired.list file that holds a list of tiles to be re-rendered
+        rendered_state_file_path (str): path to a file that holds the current rendered state relative to sequence number
     """
-    action_id = 1 # identifier for each loop
+    action_id = 1  # identifier for each loop
 
     # Infinite loop that sleeps between tiles expirations
     while True:
         try:
-            with open(state_file_path, 'r') as expired_file:
-                expired_content = expired_file.read()
-                start, end = get_sequence_range(expired_content)
-                log.info(f'lastRendered={start-1}, sequenceNumber={end}', extra={"action_id": action_id})
+            with open(state_file_path, 'r') as state_file:
+                end = extract_positivie_integer_value(state_file.read(), 'sequenceNumber')
+                if not end:
+                    raise LookupError(f'"sequenceNumber=" is not present in file')
+            
+            with open(rendered_state_file_path, 'r') as rendered_file:
+                start = extract_positivie_integer_value(rendered_file.read(), 'lastRendered')
 
-                if start <= end:
-                    expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIR)
-                    update_currently_expired_file(currently_expired_tiles_file_path, expired_tiles)
-                    render_expired(currently_expired_tiles_file_path)
-                    update_state_file(state_file_path, end)
-        except FileNotFoundError:
-            log.error(f'file {state_file_path} not found')
+            log.info(f'current rendering state is lastRendered={start}, sequenceNumber={end}', extra={"action_id": action_id})
+        except FileNotFoundError as e:
+            if e.filename == rendered_state_file_path:
+                log.info('initializing rendering state file', extra={"action_id": action_id})
+                start = 1
+                with open(rendered_state_file_path, 'w') as rendered_file:
+                    rendered_file.write('lastRendered=1')
+            else:
+                log.error(f'{e.strerror} - {e.filename}')
         except:
             raise
-        finally:               
+        else:
+            if start <= end:
+                expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIR)
+                update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles)
+                if len(expired_tiles) > 0:
+                    render_expired(currently_expired_tiles_file_path)
+                update_rendered_state_file(rendered_state_file_path, end)
+        finally:
             action_id += 1
             time.sleep(RENDER_EXPIRED_TILES_INTERVAL)
 
@@ -198,8 +196,10 @@ def render_expired(currently_expired_tiles_file_path):
     Args:
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
-    # TODO: consider extracting min-zoom and touch-from env var
-    _ = run_subprocess([fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null'])
+    # TODO: consider extracting map, min-zoom and touch-from env var
+    _ = run_subprocess(
+        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null')
+    log.info('rendered expired tiles')
 
 
 def get_external_data():
@@ -230,17 +230,22 @@ def main():
     log.info('mod-tile container started')
 
     state_file_path = path.join(EXPIRED_DIR, 'state.txt')
-    currently_expired_tiles_file_path = path.join(EXPIRED_DIR, 'currentlyExpired.list')
+    currently_expired_tiles_file_path = path.join(
+        EXPIRED_DIR, 'currentlyExpired.list')
+    rendered_state_file_path = path.join(EXPIRED_DIR, 'renderedState.txt')
 
-    time.sleep(INITIAL_TIMEOUT) # TODO: replace with a better logic, perhaps make container dependendant in docker-compose
+    # TODO: replace with a better logic, perhaps make container dependendant in docker-compose
+    time.sleep(INITIAL_TIMEOUT)
     get_external_data()
     run_apache_service()
     run_renderd_service()
-    expire_tiles(state_file_path, currently_expired_tiles_file_path) # TODO: add liveness and readiness probes
+    # TODO: add liveness and readiness probes
+    expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path)
 
 
 if __name__ == '__main__':
-    mkdir('/var/log/osm-seed') # create a dir for the default log file location
+    # create a dir for the default log file location
+    mkdir('/var/log/osm-seed')
     # pass service/process name as a parameter to JSONLogger to be as an identifier for this specific logger instance
     log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile'})
     main()

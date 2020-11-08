@@ -40,9 +40,9 @@ RUN add-apt-repository multiverse && apt update && apt -y install libboost-all-d
   mapnik-utils \
   python-mapnik \
   python3-psycopg2
-ENV workdir /src
+ENV workdir=/src
 WORKDIR $workdir
-#mod_tile
+# mod_tile
 RUN git clone -b switch2osm git://github.com/SomeoneElseOSM/mod_tile.git && \
   cd mod_tile && \
   ./autogen.sh && \
@@ -52,11 +52,11 @@ RUN git clone -b switch2osm git://github.com/SomeoneElseOSM/mod_tile.git && \
   make \
   install-mod_tile && \
   ldconfig
-# osm-carto
-RUN cd $workdir
+# osm-carto dependencies
 RUN apt-get -y install nodejs-dev \
   node-gyp \
-  libssl1.0-dev 
+  libssl1.0-dev
+# carto & osm-carto
 RUN git clone git://github.com/gravitystorm/openstreetmap-carto.git && \
   cd openstreetmap-carto && \
   apt -y install npm nodejs && \
@@ -68,18 +68,14 @@ RUN apt-get -y install fonts-noto-cjk \
   fonts-noto-hinted \
   fonts-noto-unhinted \
   ttf-unifont
-# configure renderd
+# configure apache2, mod_tile & renderd
 COPY ./config/renderd.conf /usr/local/etc/renderd.conf
-# configure apache2
 RUN mkdir -p /var/lib/mod_tile && mkdir -p /var/run/renderd
 COPY ./config/mod_tile.conf /etc/apache2/conf-available/mod_tile.conf
 RUN a2enconf mod_tile
 COPY ./config/apache2.conf /etc/apache2/sites-available/000-default.conf
-# pip config
-COPY ./requirements.txt .
+# configure startup script
+COPY requirements.txt main.py ./
 RUN pip3 install -r requirements.txt
-# start script
-RUN cd $workdir
-COPY ./main.py .
 ENTRYPOINT ["python3"]
 CMD ["-u", "./main.py"]
