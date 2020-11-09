@@ -19,16 +19,18 @@ environ['PGUSER'] = environ['POSTGRES_USER']
 environ['PGPASSWORD'] = environ['POSTGRES_PASSWORD']
 
 
-def run_subprocess_async(command, wait=False):
+def run_subprocess_async(command, stdout, stderr, wait=False):
     """
     Run a subprocess command in a thread
     Args:
         command (string): the command to run as a string
+        stdout (callable): a callable to pass stdout to
+        stderr (callable): a callable to pass stderr to
         wait (bool, optional): whether to wait until thread termination. Defaults to False.
     """
-    thread = run_command_async(command, log.info, log.error,
-        (lambda exit_code: log.info(f'command: {command}, ended with exit code: {exit_code}')),
-        (lambda: log.info(f'command: {command} completed successfully')))
+    thread = run_command_async(command, stdout, stderr,
+        (lambda exit_code: log.info(f'command: {command} - ended with exit code: {exit_code}')),
+        (lambda: log.info(f'command: {command} - completed successfully')))
     if wait:
         thread.join()
 
@@ -185,7 +187,7 @@ def render_expired(currently_expired_tiles_file_path):
     """
     # TODO: consider extracting map, min-zoom and touch-from env var
     run_subprocess_async(
-        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null', True)
+        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null', log.info, log.error, True)
     log.info('rendered expired tiles')
 
 
@@ -194,14 +196,15 @@ def get_external_data():
     Populate openstreetmap-carto's external data sources to postgresql
     """
     log.info('getting external data')
-    run_subprocess_async('PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml', True)
+    command = 'PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml'
+    run_subprocess_async(command, log.info, log.error, True)
 
 
 def run_apache_service():
     """
     Start apache tile serving service
     """
-    run_subprocess_async('service apache2 start')
+    run_subprocess_async('service apache2 start', log.info, log.error)
     log.info('apache2 service started')
 
 
@@ -209,7 +212,7 @@ def run_renderd_service():
     """
     Start renderd service
     """
-    run_subprocess_async('renderd -fc /usr/local/etc/renderd.conf')
+    run_subprocess_async('renderd -f -c /usr/local/etc/renderd.conf', log.info, log.error)
     log.info('renderd service started')
 
 

@@ -43,8 +43,7 @@ RUN add-apt-repository multiverse && apt update && apt -y install libboost-all-d
   gdal-bin \
   libmapnik-dev \
   mapnik-utils \
-  python-mapnik \
-  python3-psycopg2
+  python-mapnik
 ENV workdir=/src
 WORKDIR $workdir
 # mod_tile
