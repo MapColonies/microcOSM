@@ -1,4 +1,4 @@
-# OSM SEED
+# microcOSM
 
 microcosm aims to provide an easily installable package for the OpenStreetMap software stack.
 

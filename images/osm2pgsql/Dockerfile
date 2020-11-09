@@ -15,9 +15,13 @@ RUN apt-get -y update && apt -y install make software-properties-common \
   lua5.2 \
   liblua5.2-dev \
   git-core \
-  postgresql-client \ 
+  postgresql-client \
+  python3-pip \
   wget
-WORKDIR /src
+COPY ./requirements.txt .
+RUN pip3 install -r requirements.txt
+ENV workdir /src
+WORKDIR $workdir
 RUN git clone git://github.com/openstreetmap/osm2pgsql.git && \
   cd osm2pgsql && \
   git checkout c4c66d0faf6a4883f054d0a05e8928dd9b2b539f && \
@@ -26,9 +30,10 @@ RUN git clone git://github.com/openstreetmap/osm2pgsql.git && \
   cmake .. && \
   make && \
   make install
-COPY ./start.sh .
+RUN mkdir /var/log/osm-seed
 COPY ./config/openstreetmap-carto.lua .
 COPY ./config/openstreetmap-carto.style .
 COPY ./config/first-osm-import.osm .
-RUN chmod a+x ./start.sh
-CMD ./start.sh
+COPY ./start.py .
+RUN chmod a+x $workdir/start.py
+CMD ./start.py

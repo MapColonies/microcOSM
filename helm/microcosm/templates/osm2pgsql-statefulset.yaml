@@ -28,7 +28,6 @@ spec:
         {{- if eq .Values.cloudProvider "minikube" }} 
         image: "{{ .Values.osm2pgsql.image.minikube }}"
         {{- end }}
-        command: ['./start.sh']
         {{- if .Values.osm2pgsql.resources.enabled }}
         resources:
           requests:
@@ -57,24 +56,15 @@ spec:
             value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
           - name: OSM2PGSQL_UPDATE_INTERVAL
             value: {{ quote .Values.osm2pgsql.env.UPDATE_INTERVAL }}
-          - name: REPLICATION_DIR
-            value: {{ .Values.osm2pgsql.env.REPLICATION_DIRECTORY }}
           - name: EXPIRED_DIR
             value: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
+          - name: REPLICATION_URL
+            value: http://{{ .Release.Name }}-replication-job/
         volumeMounts:
-        - mountPath: {{ .Values.osm2pgsql.env.REPLICATION_DIRECTORY }}
-          name: replication-storage
         - mountPath: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
           name: osm2pgsql-expired-storage
       restartPolicy: Always
       volumes:
-        - name: replication-storage
-        {{- if .Values.replicationJob.persistenceDisk.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-replication-job-pv-claim
-        {{- else }}
-          emptyDir: {}
-        {{- end }}
         - name: osm2pgsql-expired-storage
         {{- if .Values.osm2pgsql.persistenceDisk.enabled }}
           persistentVolumeClaim:
