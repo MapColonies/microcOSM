@@ -23,7 +23,6 @@ The sequence number of last rendered replication will be stated in `/mnt/expired
 
 **Env Variables**
 
-- `INITIAL_TIMEOUT` an initial timeout for the container e.g `30`
 - `RENDER_EXPIRED_TILES_INTERVAL` the interval in seconds for mod_tile to expire tiles and rerender them.
 - `MOD_TILE_HOST` e.g `localhost`
 - `MOD_TILE_PORT` e.g `1337`
@@ -32,11 +31,11 @@ The sequence number of last rendered replication will be stated in `/mnt/expired
 - `EXPIRED_DIR` the inner directory path for the expired lists
 - `LOG_CONFIG_PATH` logging configuration yaml file path
 
-- `POSTGRES_TILER_HOST` tiler db for rendering host
-- `POSTGRES_TILER_PORT` tiler db for rendering port
-- `POSTGRES_TILER_DB` tiler db for rendering db
-- `POSTGRES_TILER_USER` tiler db for rendering user
-- `POSTGRES_TILER_PASSWORD` tiler db for rendering password
+- `POSTGRES_HOST` tiler db for rendering host
+- `POSTGRES_PORT` tiler db for rendering port
+- `POSTGRES_DB` tiler db for rendering db
+- `POSTGRES_USER` tiler db for rendering user
+- `POSTGRES_PASSWORD` tiler db for rendering password
 
 **Files**
 

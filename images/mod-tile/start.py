@@ -1,15 +1,15 @@
+import psycopg2
 import re
 import subprocess
 import sys
 import time
 from os import path, linesep, environ, mkdir
 from jsonlogger.logger import JSONLogger
+from osmeterium.run_command import run_command_async
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
 
-INITIAL_TIMEOUT = int(environ.get('INITIAL_TIMEOUT', 30))
-RENDER_EXPIRED_TILES_INTERVAL = float(
-    environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
+RENDER_EXPIRED_TILES_INTERVAL = float(environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
 EXPIRED_DIR = environ.get('EXPIRED_DIR', '/mnt/expired')
 
 environ['PGHOST'] = environ['POSTGRES_HOST']
@@ -19,30 +19,18 @@ environ['PGUSER'] = environ['POSTGRES_USER']
 environ['PGPASSWORD'] = environ['POSTGRES_PASSWORD']
 
 
-def run_subprocess(args, log_output=True):
+def run_subprocess_async(command, wait=False):
     """
-    Run a subprocess from the passed args
+    Run a subprocess command in a thread
     Args:
-        args (string|list): the command to run as a string or a list of strings of the command with arguments
-        log_output (bool, optional): whether to log output of the subprocess. Defaults to True.
-    Returns:
-        subprocess.CompletedProcess: subprocess response object
+        command (string): the command to run as a string
+        wait (bool, optional): whether to wait until thread termination. Defaults to False.
     """
-    try:
-        process = subprocess.run(args, shell=True, encoding='utf8', check=True,
-                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=dict(environ))
-    except (subprocess.CalledProcessError, Exception) as ex:
-        log.error(fr'The subprocess raised an error: {ex.stderr}')
-        raise
-    else:
-        if log_output:
-            if process.stdout and len(process.stdout) > 0:
-                [log.info(log_line) for log_line in process.stdout.split(
-                    '\n') if len(log_line) > 0]
-            if process.stderr and len(process.stderr) > 0:
-                [log.error(log_line) for log_line in process.stderr.split(
-                    '\n') if len(log_line) > 0]
-        return process
+    thread = run_command_async(command, log.info, log.error,
+        (lambda exit_code: log.info(f'command: {command}, ended with exit code: {exit_code}')),
+        (lambda: log.info(f'command: {command} completed successfully')))
+    if wait:
+        thread.join()
 
 
 def extract_positivie_integer_value(text, key):
@@ -72,21 +60,32 @@ def extract_positivie_integer_value(text, key):
     return integer_value
 
 
+def get_path_part_from_sequence_number(sequence_number, denominator):
+    """
+    Get a path part of a sequence number styled path (e.g. 000/002/345)
+    Args:
+        sequence_number (int): sequence number (a positive integer)
+        denominator (int): denominator used to extract the relevant part of a path
+    Returns:
+        str: part of a path
+    """
+    return '{:03d}'.format(int(sequence_number / denominator))[-3:]
+
+
 def unique_tiles_from_files(start, end, directory):
     """
-    Reads z/x/y tiles (e.g. 0/0/0) from files, in a structured replication dir.
-    The functions returns a unique, ordered list of these tiles
+    Ectracts a unique and ordered list of z/x/y expired tiles (e.g. 0/0/0) from files, in a structured replication dir
     Args:
         start (int): index of the first replication file
         end (int): index of the last replication file
-        directory (str): replication directory path
+        directory (str): path to a directory that contains replication structured dirs with expired tiles lists
     Returns:
         list: unique and ordered list of tiles
     """
     expired_tiles = []
     i = start
 
-    # replication directory structure 004/215/801.state.txt corresponds to index 4,215,801
+    # replication directory structure 004/215/801 corresponds to sequence number 4,215,801
     while i <= end:
         path_parts = [directory]
         path_parts += [get_path_part_from_sequence_number(
@@ -108,18 +107,6 @@ def unique_tiles_from_files(start, end, directory):
     expired_tiles = list(set(expired_tiles))
     expired_tiles.sort()
     return expired_tiles
-
-
-def get_path_part_from_sequence_number(sequence_number, denominator):
-    """
-    Get a path part of a sequence number styled path (e.g. 000/002/345)
-    Args:
-        sequence_number (int): sequence number (a positive integer)
-        denominator (int): denominator used to extract the relevant part of a path
-    Returns:
-        str: part of a path
-    """
-    return '{:03d}'.format(int(sequence_number / denominator))[-3:]
 
 
 def update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles):
@@ -175,7 +162,7 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
                 with open(rendered_state_file_path, 'w') as rendered_file:
                     rendered_file.write('lastRendered=1')
             else:
-                log.error(f'{e.strerror} - {e.filename}')
+                log.error(f'{e.strerror}: {e.filename}')
         except:
             raise
         else:
@@ -197,8 +184,8 @@ def render_expired(currently_expired_tiles_file_path):
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
     # TODO: consider extracting map, min-zoom and touch-from env var
-    _ = run_subprocess(
-        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null')
+    run_subprocess_async(
+        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null', True)
     log.info('rendered expired tiles')
 
 
@@ -207,14 +194,14 @@ def get_external_data():
     Populate openstreetmap-carto's external data sources to postgresql
     """
     log.info('getting external data')
-    _ = run_subprocess('PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml')
+    run_subprocess_async('PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml', True)
 
 
 def run_apache_service():
     """
     Start apache tile serving service
     """
-    _ = run_subprocess('service apache2 start')
+    run_subprocess_async('service apache2 start')
     log.info('apache2 service started')
 
 
@@ -222,7 +209,7 @@ def run_renderd_service():
     """
     Start renderd service
     """
-    _ = run_subprocess('renderd -c /usr/local/etc/renderd.conf')
+    run_subprocess_async('renderd -fc /usr/local/etc/renderd.conf')
     log.info('renderd service started')
 
 
@@ -234,8 +221,6 @@ def main():
         EXPIRED_DIR, 'currentlyExpired.list')
     rendered_state_file_path = path.join(EXPIRED_DIR, 'renderedState.txt')
 
-    # TODO: replace with a better logic, perhaps make container dependendant in docker-compose
-    time.sleep(INITIAL_TIMEOUT)
     get_external_data()
     run_apache_service()
     run_renderd_service()
