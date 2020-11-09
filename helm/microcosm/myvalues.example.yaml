@@ -58,7 +58,7 @@ replicationJob:
   #   minikube: 'microcosm-replication-job:v1'
 
 # ====================================================================================================
-# Variables for microcosm to pupulate the apidb
+# Variables for microcosm to populate the apidb
 # ====================================================================================================
 populateApidb:
   enabled: true
@@ -77,6 +77,14 @@ vectorTilesDb:
   auth:
     user: postgres
     password: '1234'
+
+# ====================================================================================================
+# Variables for microcosm to populate the vector tiles db
+# ====================================================================================================
+populateVectorTilesDb:
+  enabled: true
+  # image:
+  #   minikube: 'microcosm-populate-vector-tiles-db:v1'
 
 # ====================================================================================================
 # Variables for imposm
