@@ -4,7 +4,7 @@ This container is responsible for importing the replication osmChange files from
 
 With every import\append configuration files that indicate the data scheme needs to be specified. Note that once the database is populated with the first import the same configurtion needs to be appended. [read more](#Database-columns-structure)
 
-Appending changes to exising source of data will result in list of expired tiles which will be saved in the replication files fashion (`/mnt/expired/x/y/z-expire.list`). Where x,y,z are derived from the replication sequence number of that same replication. `tiler-renderer` will re-render the expired tiles based on the new data entered in `tiler-db`.
+Appending changes to exising source of data will result in list of expired tiles which will be saved in the replication files fashion (`/mnt/expired/x/y/z-expire.list`). Where x,y,z are derived from the replication sequence number of that same replication. `mod-tile` will re-render the expired tiles based on the new data entered in `tiler-db`.
 
 Appended changes are being tracked in the `state.txt` file placed in `/mnt/expired/`.
 The `sequenceNumber` key states the last replication sequence number created by `replication-job` container and `lastAppend` key states the last replication appended by `osm2pgsql`.
@@ -18,6 +18,10 @@ The `sequenceNumber` key states the last replication sequence number created by 
 - `POSTGRES_PORT` e.g `5432`
 - `POSTGRES_USER` e.g `postgres`
 - `POSTGRES_PASSWORD` e.g `1234`
+- `REPLICATION_URL` e.g `http://static-server/replication/minute`
+- `OSM2PGSQL_UPDATE_INTERVAL` e.g `60` (60 seconds)
+- `EXPIRED_DIR` e.g `/mnt/expired`
+- 
 
   **Env Variables to update data**
 
