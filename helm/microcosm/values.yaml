@@ -227,6 +227,23 @@ vectorTilesDb:
       cpu: '2.5'
 
 # ====================================================================================================
+# Variables for microcosm to populate the vector tiles db
+# ====================================================================================================
+populateVectorTilesDb:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/populate-vector-tiles-db:v1'
+    minikube: 'microcosm-populate-vector-tiles-db:v1'
+  resources:
+    enabled: false
+    requests:
+      memory: '1Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2.5'
+
+# ====================================================================================================
 # Variables for imposm
 # ====================================================================================================
 imposm:
@@ -235,23 +252,19 @@ imposm:
     aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-imposm:v1'
     minikube: 'microcosm-imposm:v1'
   env:
-    REPLICATION_DIRECTORY: /mnt/data/cachedir
-    MAPPING_FILE: imposm3.json
-    TILER_IMPORT_FROM: osm
-    TILER_IMPORT_PBF_URL: https://download.geofabrik.de/europe/andorra-latest.osm.pbf
-    TILER_IMPORT_LIMIT: https://gist.githubusercontent.com/Rub21/96bdcac5eb11f0b36ba8d0352ac537f4/raw/2606f2e207d4a0d895897a83efa1efacefd36eb4/monaco.geojson
-    IMPOSM_REPLICATION_INTERVAL: 1m
+    CONFIG_EXPIRED_TILES_ZOOM: 14
+    CONFIG_REPLICATION_INTERVAL: 1m
   persistenceDisk:
     data:
       enabled: true
       accessMode: ReadWriteOnce
-      mountPath: /mnt/data
+      mountPath: /mnt/data/
       subPath: imposm-data
       storageSize: 5Gi
     expired:
       enabled: true
       accessMode: ReadWriteMany
-      mountPath: /mnt/expiretiles
+      mountPath: /mnt/expired-tiles
       subPath: imposm-expired
       storageSize: 5Gi
   resources:

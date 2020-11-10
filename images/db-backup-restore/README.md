@@ -13,15 +13,11 @@ To run the container needs a bunch of ENV variables:
 
 The following env variables are according to which cloud provider you are going to use:
 
-- `CLOUDPROVIDER`, eg. `aws` or `gcp`
+- `CLOUDPROVIDER`, eg. `aws`
 
 In case AWS:
 
 - `AWS_S3_BUCKET` e.g `s3://microcosm-test`
-
-In case GCP:
-
-- `GCP_STORAGE_BUCKET` e.g `gs://microcosm-test`
 
 _Database action_
 

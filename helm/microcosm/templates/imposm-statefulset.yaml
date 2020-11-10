@@ -28,7 +28,6 @@ spec:
         {{- if eq .Values.cloudProvider "minikube" }} 
         image: "{{ .Values.imposm.image.minikube }}"
         {{- end }}
-        command: ['./start.sh']
         {{- if .Values.imposm.resources.enabled }}
         resources:
           requests:
@@ -39,8 +38,6 @@ spec:
             cpu: {{ .Values.imposm.resources.limits.cpu }}
         {{- end }}
         env:
-          - name: IMPOSM_MAPPING_FILE
-            value: {{ .Values.imposm.env.MAPPING_FILE }}
           - name: POSTGRES_HOST
             value: {{ .Release.Name }}-vector-tiles-db
           - name: POSTGRES_DB
@@ -57,12 +54,18 @@ spec:
                 key: username
           - name: POSTGRES_PORT
             value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
-          - name: IMPOSM_IMPORT_FROM
-            value: {{ .Values.imposm.env.TILER_IMPORT_FROM }}
-          - name: IMPOSM_REPLICATION_INTERVAL
-            value: {{ .Values.imposm.env.IMPOSM_REPLICATION_INTERVAL }}
+          - name: CONFIG_REPLICATION_INTERVAL
+            value: {{ .Values.imposm.env.CONFIG_REPLICATION_INTERVAL }}
           - name: IMPOSM_REPLICATION_URL
             value: http://{{ .Release.Name }}-replication-job/
+          - name: CONFIG_EXPIRED_TILES_ZOOM
+            value: {{ quote .Values.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
+          - name: CONFIG_EXPIRED_TILES_DIR
+            value: {{ .Values.imposm.persistenceDisk.expired.mountPath }}
+          # - name: CONFIG_CACHE_DIR
+          #   value: {{ .Values.imposm.env.CONFIG_CACHE_DIR }}
+          # - name: CONFIG_DIFF_DIR
+          #   value: {{ .Values.imposm.env.CONFIG_DIFF_DIR }}
           - name: CLOUDPROVIDER
             value: {{ .Values.cloudProvider }}
           # In case cloudProvider=aws

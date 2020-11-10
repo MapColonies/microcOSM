@@ -1,0 +1,50 @@
+{{- if .Values.populateVectorTilesDb.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-populate-vector-tiles-db-job
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: populate-vector-tiles-db-job
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+    template:
+      spec:
+        containers:
+        - name: {{ .Release.Name }}-populate-vector-tiles-db-job
+          {{- if eq .Values.cloudProvider "aws" }} 
+          image: "{{ .Values.populateVectorTilesDb.image.aws }}"
+          {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: "{{ .Values.populateVectorTilesDb.image.minikube }}"
+          {{- end }}
+          command: ['./start.sh']
+          {{- if .Values.populateVectorTilesDb.resources.enabled }}   
+          resources:
+            requests:
+              memory: {{ .Values.populateVectorTilesDb.resources.requests.memory }}
+              cpu: {{ .Values.populateVectorTilesDb.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.populateVectorTilesDb.resources.limits.memory }}
+              cpu: {{ .Values.populateVectorTilesDb.resources.limits.cpu }}
+          {{- end }}
+          env:
+          - name: POSTGRES_HOST
+            value: {{ .Release.Name }}-vector-tiles-db
+          - name: POSTGRES_DB
+            value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-db-secret
+                key: password
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-db-secret
+                key: username
+          - name: POSTGRES_PORT
+            value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
+        restartPolicy: Never
+{{- end }}

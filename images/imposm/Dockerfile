@@ -1,58 +1,25 @@
-FROM ubuntu:14.04
-ENV GOPATH /usr/bin
+FROM ubuntu:20.04
+
+ENV IMPOSM_VERSION=0.11.0
+
 RUN apt-get -y update
 RUN apt-get install -y \
-  build-essential \
-  g++ \
-  git-core \
-  libboost-dev \
-  libboost-system-dev \
-  libboost-filesystem-dev \
-  libexpat1-dev \
-  zlib1g-dev \
-  libbz2-dev \
-  libpq-dev \
-  libgeos-dev \
-  libgeos++-dev \
-  libproj-dev \
-  libleveldb-dev \
-  libgeos-dev \
-  libprotobuf-dev \
-  libgeos++-dev \
-  libjson0-dev \
   curl \
-  wget \
-  unzip \
-  postgresql \
-  postgresql-contrib \
-  python-pip \
-  software-properties-common \
-  python-software-properties 
+  libpq-dev \
+  python3-pip
 
-# Install awscli  and gsutil  to get the pbf file
-RUN pip install awscli
-RUN curl -sSL https://sdk.cloud.google.com | bash
-RUN ln -f -s /root/google-cloud-sdk/bin/gsutil /usr/bin/gsutil
+RUN set -x \
+  && mkdir -p /opt/imposm \
+  && cd /opt/imposm \
+  && curl -L -o imposm-$IMPOSM_VERSION.tar.gz "https://github.com/omniscale/imposm3/releases/download/v$IMPOSM_VERSION/imposm-$IMPOSM_VERSION-linux-x86-64.tar.gz" \
+  && tar -xzvf imposm-$IMPOSM_VERSION.tar.gz \
+  && rm -f imposm-$IMPOSM_VERSION.tar.gz \
+  && ln -s /opt/imposm/imposm-$IMPOSM_VERSION-linux-x86-64/imposm /usr/local/bin/imposm
 
-# Gdal is required to process the natural earth files
-RUN add-apt-repository ppa:ubuntugis/ppa
-RUN apt-get -y update
-RUN apt-get install -y gdal-bin
+COPY ./requirements.txt .
+RUN pip3 install -r requirements.txt
 
-# Install go
-RUN add-apt-repository ppa:gophers/archive
-RUN apt-get -y update
-RUN apt-get install -y golang-1.10-go
-RUN cp /usr/lib/go-1.10/bin/go /usr/bin/go
-RUN cp /usr/lib/go-1.10/bin/gofmt /usr/bin/gofmt
-
-# Install imposm
-RUN mkdir -p go
-WORKDIR /go
-RUN export GOPATH=`pwd`
-RUN go get github.com/omniscale/imposm3
-RUN go install github.com/omniscale/imposm3/cmd/imposm
-RUN cp $GOPATH/bin/imposm /usr/bin/imposm
+RUN mkdir /var/log/osm-seed
 
 ENV IMPOSMDATA /mnt/data
 RUN mkdir -p "$IMPOSMDATA" && chmod 777 "$IMPOSMDATA"
@@ -63,6 +30,6 @@ COPY ./config/${IMPOSM_MAPPING_FILE} ${IMPOSM_MAPPING_FILE}
 COPY ./config/postgis_helpers.sql postgis_helpers.sql
 COPY ./config/postgis_index.sql postgis_index.sql
 COPY ./config/first-osm-import.pbf .
-COPY start.sh start.sh
-COPY scripts scripts
-CMD ./start.sh
+COPY start.py start.py
+RUN chmod a+x start.py
+CMD ./start.py

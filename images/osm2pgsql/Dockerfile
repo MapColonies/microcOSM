@@ -1,6 +1,5 @@
 FROM ubuntu:18.04
-RUN apt-get -y update && apt-get -y install software-properties-common
-RUN apt -y install make \
+RUN apt-get -y update && apt -y install make software-properties-common \
   cmake \
   g++ \
   libboost-dev \

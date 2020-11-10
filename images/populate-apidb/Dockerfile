@@ -1,33 +1,29 @@
-FROM ubuntu:16.04
-ENV workdir /app
-RUN apt-get update
-RUN apt-get install -y \
+FROM ubuntu:18.04
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ="Asia/Jerusalem"
+RUN apt-get update && apt-get install -y \
     wget \
     build-essential \
     python-pip \
     software-properties-common \
-    python-software-properties \
     libz-dev zlib1g-dev \
     curl unzip \
     gdal-bin tar \
     bzip2 clang git \
-    default-jre default-jdk gradle
-RUN wget -q https://www.postgresql.org/media/keys/ACCC4CF8.asc -O - | apt-key add -
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
-RUN apt-get update
-RUN apt-get install -y postgresql postgresql-contrib
+    default-jre default-jdk gradle \
+    postgresql postgresql-contrib
 RUN pip install awscli
-RUN curl -sSL https://sdk.cloud.google.com | bash
-RUN ln -f -s /root/google-cloud-sdk/bin/gsutil /usr/bin/gsutil
 # Install osmosis
-RUN git clone https://github.com/openstreetmap/osmosis.git
-WORKDIR osmosis
-RUN git checkout 4b1af52a5d9a5eca76e0550b464ea4ce11260e71
-RUN mkdir dist
-RUN ./gradlew assemble
-RUN tar -xvzf "$PWD"/package/build/distribution/*.tgz -C "$PWD"/dist/
-RUN ln -s "$PWD"/dist/bin/osmosis /usr/bin/osmosis
-RUN osmosis --version 2>&1 | grep "Osmosis Version"
-WORKDIR $workdir
+WORKDIR /osmosis
+ENV OSMOSIS_VERSION=0.48.2
+RUN set -x \
+    && useradd -ms /bin/bash osmosis \
+    && mkdir -p /opt/osmosis \
+    && cd /opt/osmosis \
+    && curl -L -o osmosis-$OSMOSIS_VERSION.tgz "https://github.com/openstreetmap/osmosis/releases/download/$OSMOSIS_VERSION/osmosis-$OSMOSIS_VERSION.tgz" \
+    && tar -xzvf osmosis-$OSMOSIS_VERSION.tgz \
+    && rm -f osmosis-$OSMOSIS_VERSION.tgz \
+    && ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
+WORKDIR /app
 COPY ./start.sh .
 CMD ./start.sh
