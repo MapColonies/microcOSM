@@ -37,7 +37,8 @@ TILER*CACHE*\* , by default microcosm-tiler is using aws-s3 for caching the tile
 - `TILER_CACHE_REGION` e.g `us-east-1`
 - `TILER_CACHE_AWS_ACCESS_KEY_ID` e.g `xyz`
 - `TILER_CACHE_AWS_SECRET_ACCESS_KEY` e.g `xyz`
-- `TILER_CACHE_MAX_ZOOM` e.g `22`
+- `TILER_CACHE_MAX_ZOOM` e.g `19`
+- `TILER_CACHE_MIN_ZOOM` e.g `14`
 
 #### Building the container
 

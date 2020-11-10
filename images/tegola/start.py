@@ -12,6 +12,8 @@ EXPIRE_TILES_DIR = os.environ.get('EXPIRE_TILES_DIR', '/mnt/expiretiles')
 CONFIG_PATH = '/opt/tegola_config/config.toml'
 EXPIRE_TILES_LIST_FILE = 'expire_tiles.txt'
 HOST = os.environ['POSTGRES_HOST']
+MAX_ZOOM = os.environ['TILER_CACHE_MAX_ZOOM']
+MIN_ZOOM = os.environ['TILER_CACHE_MIN_ZOOM']
 INTERVAL = os.environ['TILER_CACHE_UPDATE_INTERVAL']
 os.environ["PATH"] = os.environ.get("PATH") + ":/opt"
 
@@ -26,8 +28,8 @@ def purgeExpireTiles():
             os.remove(filepath)
     if os.path.getsize(EXPIRE_TILES_LIST_FILE) != 0:  # if file is not empty
         log.info("Remove expire tiles from cache...")
-        tegola_cache_command = 'tegola cache purge tile-list {0} --min-zoom=14 --max-zoom=20 --config={1}'.format(
-            EXPIRE_TILES_LIST_FILE, CONFIG_PATH)
+        tegola_cache_command = 'tegola cache purge tile-list {0} --min-zoom={1} --max-zoom={2} --config={3}'.format(
+            EXPIRE_TILES_LIST_FILE, MIN_ZOOM, MAX_ZOOM, CONFIG_PATH)
         run_command(tegola_cache_command, log.info, log.error,
                     terminate_on_tegola_exit, lambda: None)
 
