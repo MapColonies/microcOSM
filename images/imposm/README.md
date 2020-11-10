@@ -18,7 +18,7 @@ Required environment variables:
 
   **Env variables to import the files**
 
-- `CONFIG_REPLICATION_INTERVAL` the time between replications
+- `CONFIG_REPLICATION_INTERVAL` the time between replications with the time unit (1m for a minute, 1h for an hour)
 - `IMPOSM_REPLICATION_URL` the url to the replication files
 - `CONFIG_EXPIRED_TILES_ZOOM` the zoom to expire tiles on update
 - `CONFIG_EXPIRED_TILES_DIR` the directory inside the container to save the expired tiles lists

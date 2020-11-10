@@ -19,7 +19,7 @@ Required environment variables:
 **Env variables to update the tiles**
 
 - `EXPIRE_TILES_DIR` the folder inside the container where the expire dir is mounted
-- `TILER_CACHE_UPDATE_INTERVAL` the time to wait between updating tiles
+- `TILER_CACHE_UPDATE_INTERVAL` the time to wait between updating tiles in seconds
 
 **Env variables to serve the tiles**
 
