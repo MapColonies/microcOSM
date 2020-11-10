@@ -4,8 +4,8 @@ ENV CACHEDATA /mnt/data
 RUN mkdir -p "$CACHEDATA" && \
   chmod 777 "$CACHEDATA" && \
   apk update && \
-  apk add --no-cache python3 \
-  postgresql-client
+  apk add --no-cache python3
+# postgresql-client
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
 # create dir for logs

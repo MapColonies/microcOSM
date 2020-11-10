@@ -1,1 +1,2 @@
 mapcoloniesjsonlogger==0.0.14
+osmeterium==0.0.1
