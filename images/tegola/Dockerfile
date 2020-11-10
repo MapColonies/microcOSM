@@ -12,7 +12,7 @@ RUN pip3 install -r requirements.txt
 RUN mkdir /var/log/osm-seed
 VOLUME /mnt/data
 COPY ./config/config.toml /opt/tegola_config/config.toml
-COPY ./run.py .
-RUN chmod a+x ./run.py
-CMD ./run.py
-ENTRYPOINT [ "./run.py" ]
+COPY ./start.py .
+RUN chmod a+x ./start.py
+CMD ./start.py
+ENTRYPOINT [ "./start.py" ]
