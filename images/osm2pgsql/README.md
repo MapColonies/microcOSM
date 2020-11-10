@@ -11,7 +11,7 @@ The `sequenceNumber` key states the last replication sequence number created by 
 
 ### Configuration
 
-**Env Variables to connect to the db-tiler**
+**Env Variables to connect to the tiles db**
 
 - `POSTGRES_HOST` e.g `tiler-db`
 - `POSTGRES_DB` e.g `tiler-osm`
@@ -22,6 +22,8 @@ The `sequenceNumber` key states the last replication sequence number created by 
   **Env Variables to update data**
 
 - `OSM2PGSQL_UPDATE_INTERVAL` the interval in **seconds** for `osm2pgsql` to append replication files into the `tiler-db`.
+- `REPLICATION_URL` the url to retrieve the replication files from.
+- `EXPIRED_DIR` the folder to save the lists of expired tiles to.
 
 #### **Database columns structure**
 
