@@ -14,16 +14,24 @@ Required environment variables:
 - `POSTGRES_USER` e.g `postgres`
 - `POSTGRES_PASSWORD` e.g `1234`
 
+\*\*
+
+**Env variables to update the tiles**
+
+- `EXPIRE_TILES_DIR` the folder inside the container where the expire dir is mounted
+- `TILER_CACHE_UPDATE_INTERVAL` the time to wait between updating tiles in seconds
+
 **Env variables to serve the tiles**
 
 - `TILER_SERVER_PORT` e.g `9090`
+- `URI_PREFIX` the start string for the uri e.g `mvt`
 
 **Env variables for caching the tiles**
 
 TILER*CACHE*\* , by default microcosm-tiler is using aws-s3 for caching the tiles, if you want to change it, take a look in: https://github.com/go-spatial/tegola/tree/master/cache
 
 - `TILER_SERVER_PORT` e.g `9090`
-- `TILER_CACHE_TYPE` e.g `s3`
+- `TILER_CACHE_TYPE` e.g `s3` or `file`
 - `TILER_CACHE_BUCKET` e.g `s3://microcosm-tiler`
 - `TILER_CACHE_BASEPATH` e.g `local`
 - `TILER_CACHE_REGION` e.g `us-east-1`

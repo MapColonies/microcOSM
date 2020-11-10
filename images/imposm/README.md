@@ -18,19 +18,10 @@ Required environment variables:
 
   **Env variables to import the files**
 
-- `IMPOSM_IMPORT_PBF_URL` eg `http://download.geofabrik.de/south-america/peru-latest.osm.pbf`
-- `TILER_IMPORT_LIMIT` geojson url
-- `IMPOSM_MAPPING_FILE` imposm yaml\json mapping file. the `vector-tiles-db` will be mapped according to
-
-If you are setting up the variable TILER_IMPORT_PROM=`microcosm` you should fill following env variables according to which cloud provider you are going to use
-
-- `CLOUDPROVIDER`, eg. `aws`
-
-In case AWS:
-
-- `AWS_S3_BUCKET` e.g `s3://microcosm-test`
-
-Note: In case you use the `TILER_IMPORT_PROM`=`microcosm` you need to make public the minute replication files to update the DB with the recent changes.
+- `CONFIG_REPLICATION_INTERVAL` the time between replications with the time unit (1m for a minute, 1h for an hour)
+- `IMPOSM_REPLICATION_URL` the url to the replication files
+- `CONFIG_EXPIRED_TILES_ZOOM` the zoom to expire tiles on update
+- `CONFIG_EXPIRED_TILES_DIR` the directory inside the container to save the expired tiles lists
 
 #### Building the container
 
