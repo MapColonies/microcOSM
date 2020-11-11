@@ -14,4 +14,8 @@ This repo contains:
 
 [Here](https://wiki.openstreetmap.org/wiki/Component_overview) you can find the component overview wiki page.
 
+## MicrocOSM Flow
+Click [here](/microcosm/README.md)
+
+## OSM Component Overview
 ![component overview](https://wiki.openstreetmap.org/w/images/thumb/2/27/OSM_Components.svg/800px-OSM_Components.svg.png)
