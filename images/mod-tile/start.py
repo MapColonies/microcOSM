@@ -5,7 +5,7 @@ import sys
 import time
 from os import path, linesep, environ, mkdir
 from jsonlogger.logger import JSONLogger
-from osmeterium.run_command import run_command_async
+from osmeterium.run_command import run_command_async, run_command
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
 
@@ -172,8 +172,7 @@ def render_expired(currently_expired_tiles_file_path, action_id):
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
     command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM} >/dev/null'
-    thread = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
-    thread.join()
+    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
 
 
 def get_external_data():
@@ -182,8 +181,7 @@ def get_external_data():
     """
     log.info('getting external data')
     command = 'PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml'
-    thread = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
-    thread.join()
+    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
 
 
 def run_apache_service():
@@ -191,7 +189,7 @@ def run_apache_service():
     Start apache tile serving service
     """
     command = 'service apache2 start'
-    _ = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
+    _ = run_command_async(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('apache2 service started')
 
 
@@ -200,7 +198,7 @@ def run_renderd_service():
     Start renderd service
     """
     command = 'renderd -f -c /usr/local/etc/renderd.conf'
-    _ = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
+    _ = run_command_async(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('renderd service started')
 
 
@@ -214,16 +212,15 @@ def main():
     get_external_data()
     run_apache_service()
     run_renderd_service()
-    # TODO: add liveness and readiness probes
     expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path)
 
 
-def completed_unsuccessfully(exit_code):
+def handle_command_graceful_exit(exit_code):
     process_log.error(f'process failed with exit code: {exit_code}')
     sys.exit(exit_code)
 
 
-def completed_successfully():
+def handle_command_successful_complete():
     process_log.info(f'process completed successfully')
 
 

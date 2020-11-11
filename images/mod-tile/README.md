@@ -16,8 +16,8 @@ mod_tile is able to hold multiple mapnik style sheets. At the moment only the **
 
 For tiles to reflect the last update they need to be deleted or tagged as expired to force their being rerendered.
 Expired tiles are being re-rendered in a loop every configured interval (`RENDER_EXPIRED_TILES_INTERVAL`).
-Every replication (osmChange file) created by the `replication-job` container will be processed by `osm2pgsql` which in turn will send the expired tiles list to `EXPIRED_DIRECTORY` directory. The expired tiles will be rendered by mod_tile.
-The sequence number of last rendered replication will be stated in `EXPIRED_DIRECTORY/renderedState.txt` as `lastRendered` key.
+Every replication (osmChange file) created by the `replication-job` container will be processed by `osm2pgsql` which in turn will send the expired tiles list to `[EXPIRED_DIRECTORY]` directory. The expired tiles will be rendered by mod_tile.
+The sequence number of last rendered replication will be stated in `[EXPIRED_DIRECTORY]/renderedState.txt` as `lastRendered` key.
 
 ### Configuration
 
