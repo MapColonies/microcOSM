@@ -51,10 +51,5 @@ spec:
               - name: AWS_S3_BUCKET
                 value: {{ .Values.AWS_S3_BUCKET }}
               {{- end }}
-              # In case cloudProvider=gcp
-              {{- if eq .Values.cloudProvider "gcp" }}
-              - name: GCP_STORAGE_BUCKET
-                value: {{ .Values.GCP_STORAGE_BUCKET }}
-              {{- end }}
           restartPolicy: OnFailure
 {{- end }}

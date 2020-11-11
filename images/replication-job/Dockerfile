@@ -1,30 +1,23 @@
-FROM ubuntu:16.04
-ENV workdir /app
-RUN apt-get update
-RUN apt-get install -y \
-    wget \
-    build-essential \
+FROM ubuntu:18.04
+RUN apt-get update && apt-get install -y \
     python-pip \
-    software-properties-common \
-    python-software-properties \
     libz-dev zlib1g-dev \
     curl unzip \
-    gdal-bin tar \
-    bzip2 clang git \
-    default-jre default-jdk gradle
+    tar \
+    bzip2 default-jre
 RUN pip install awscli
-RUN curl -sSL https://sdk.cloud.google.com | bash
-RUN ln -f -s /root/google-cloud-sdk/bin/gsutil /usr/bin/gsutil
 # Install osmosis
-RUN git clone https://github.com/openstreetmap/osmosis.git
-WORKDIR osmosis
-RUN git checkout 9cfb8a06d9bcc948f34a6c8df31d878903d529fc
-RUN mkdir dist
-RUN ./gradlew assemble
-RUN tar -xvzf "$PWD"/package/build/distribution/*.tgz -C "$PWD"/dist/
-RUN ln -s "$PWD"/dist/bin/osmosis /usr/bin/osmosis
-RUN osmosis --version 2>&1 | grep "Osmosis Version"
-WORKDIR $workdir
+WORKDIR /osmosis
+ENV OSMOSIS_VERSION=0.48.2
+RUN set -x \
+    && useradd -ms /bin/bash osmosis \
+    && mkdir -p /opt/osmosis \
+    && cd /opt/osmosis \
+    && curl -L -o osmosis-$OSMOSIS_VERSION.tgz "https://github.com/openstreetmap/osmosis/releases/download/$OSMOSIS_VERSION/osmosis-$OSMOSIS_VERSION.tgz" \
+    && tar -xzvf osmosis-$OSMOSIS_VERSION.tgz \
+    && rm -f osmosis-$OSMOSIS_VERSION.tgz \
+    && ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
+WORKDIR /app
 RUN mkdir data
 VOLUME ["/app/data"]
 COPY ./start.sh .

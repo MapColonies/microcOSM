@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>MapColonies - OSM Deployment Stack</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" title="light" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+  <link rel="stylesheet" title="dark" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <style>
+      .dark-mode-wrapper {
+        display: flex;
+        padding: 10px 0;
+
+      }
+      .dark-mode-wrapper b { 
+        margin-right: 10px;
+      }
+      .onoffswitch {
+          position: relative; width: 90px;
+          -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+      }
+      .onoffswitch-checkbox {
+          position: absolute;
+          opacity: 0;
+          pointer-events: none;
+      }
+      .onoffswitch-label {
+          display: block; overflow: hidden; cursor: pointer;
+          border: 2px solid #999999; border-radius: 20px;
+      }
+      .onoffswitch-inner {
+          display: block; width: 200%; margin-left: -100%;
+          transition: margin 0.3s ease-in 0s;
+      }
+      .onoffswitch-inner:before, .onoffswitch-inner:after {
+          display: block; float: left; width: 50%; height: 30px; padding: 0; line-height: 30px;
+          font-size: 14px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+          box-sizing: border-box;
+      }
+      .onoffswitch-inner:before {
+          content: "ON";
+          padding-left: 10px;
+          background-color: #34A7C1; color: #FFFFFF;
+      }
+      .onoffswitch-inner:after {
+          content: "OFF";
+          padding-right: 10px;
+          background-color: #EEEEEE; color: #999999;
+          text-align: right;
+      }
+      .onoffswitch-switch {
+          display: block; width: 18px; margin: 6px;
+          background: #FFFFFF;
+          position: absolute; top: 0; bottom: 0;
+          right: 56px;
+          border: 2px solid #999999; border-radius: 20px;
+          transition: all 0.3s ease-in 0s; 
+      }
+      .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+          margin-left: 0;
+      }
+      .onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+          right: 0px;
+      }
+  </style>
+</head>
+
+<body>
+  <div data-app id="app">
+  </div>
+
+  <script>
+    window.$docsify = {
+      name: 'microcOSM',
+      repo: 'https://github.com/MapColonies/microcOSM',
+      loadSidebar: true,
+      themeable: {
+        readyTransition : true, // default
+        responsiveTables: true  // default
+      },
+    }
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0"></script>
+  <script>
+    var title = "dark";
+    function toggle() {
+      if (title === "dark") {
+        title = "light";
+      } else {
+        title = "dark";
+      }
+      var themes = Docsify.dom.findAll('[rel="stylesheet"]');
+      themes.forEach(function(theme) {
+          theme.disabled = theme.title !== title;
+      });
+    }
+    window.addEventListener('load', function() {
+      toggle();
+    });
+  </script>
+</body>
+
+</html>

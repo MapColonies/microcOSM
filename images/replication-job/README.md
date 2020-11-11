@@ -15,15 +15,9 @@ In order to run this container, we should pass some environment variables
 
 The following env variables are according to which cloud provider you are going to use:
 
-- `CLOUDPROVIDER`, eg. `aws` or `gcp`
-
 In case AWS:
 
 - `AWS_S3_BUCKET` e.g `s3://microcosm-test`
-
-In case GCP:
-
-- `GCP_STORAGE_BUCKET` e.g `gs://microcosm-test`
 
 **Replication folder**
 

@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/MapColonies/microcOSM.git/issues"
   },
-  "homepage": "https://github.com/MapColonies/microcOSM.git#readme"
+  "homepage": "https://github.com/MapColonies/microcOSM.git#readme",
+  "devDependencies": {
+    "docsify": "^4.11.6",
+    "docsify-cli": "^4.4.1"
+  }
 }

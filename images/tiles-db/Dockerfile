@@ -1,5 +1,4 @@
 FROM mdillon/postgis:9.5
-RUN apt-get update
 
 COPY ./config/docker-entrypoint.sh /usr/local/bin/
 RUN mkdir -p /docker-entrypoint-initdb.d
