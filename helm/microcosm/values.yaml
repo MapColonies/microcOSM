@@ -354,6 +354,7 @@ modTile:
     nodePort: 30102
   env:
     EXPIRED_DIRECTORY: /mnt/expired
+    TILE_EXPIRE_MIN_ZOOM: 14
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteOnce

@@ -9,30 +9,15 @@ from osmeterium.run_command import run_command_async
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
 
+EXPIRED_DIRECTORY = environ.get('EXPIRED_DIRECTORY', '/mnt/expired')
 RENDER_EXPIRED_TILES_INTERVAL = float(environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
-EXPIRED_DIR = environ.get('EXPIRED_DIR', '/mnt/expired')
+TILE_EXPIRE_MIN_ZOOM = int(environ.get('TILE_EXPIRE_MIN_ZOOM', 14))
 
 environ['PGHOST'] = environ['POSTGRES_HOST']
 environ['PGPORT'] = environ['POSTGRES_PORT']
 environ['PGDATABASE'] = environ['POSTGRES_DB']
 environ['PGUSER'] = environ['POSTGRES_USER']
 environ['PGPASSWORD'] = environ['POSTGRES_PASSWORD']
-
-
-def run_subprocess_async(command, stdout, stderr, wait=False):
-    """
-    Run a subprocess command in a thread
-    Args:
-        command (string): the command to run as a string
-        stdout (callable): a callable to pass stdout to
-        stderr (callable): a callable to pass stderr to
-        wait (bool, optional): whether to wait until thread termination. Defaults to False.
-    """
-    thread = run_command_async(command, stdout, stderr,
-        (lambda exit_code: log.info(f'command: {command} - ended with exit code: {exit_code}')),
-        (lambda: log.info(f'command: {command} - completed successfully')))
-    if wait:
-        thread.join()
 
 
 def extract_positivie_integer_value(text, key):
@@ -156,10 +141,10 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
             with open(rendered_state_file_path, 'r') as rendered_file:
                 start = extract_positivie_integer_value(rendered_file.read(), 'lastRendered')
 
-            log.info(f'current rendering state is lastRendered={start}, sequenceNumber={end}', extra={"action_id": action_id})
+            log.info(f'current rendering state is lastRendered={start}, sequenceNumber={end}', extra={'action_id': action_id})
         except FileNotFoundError as e:
             if e.filename == rendered_state_file_path:
-                log.info('initializing rendering state file', extra={"action_id": action_id})
+                log.info('initializing rendering state file', extra={'action_id': action_id})
                 start = 1
                 with open(rendered_state_file_path, 'w') as rendered_file:
                     rendered_file.write('lastRendered=1')
@@ -169,26 +154,26 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
             raise
         else:
             if start <= end:
-                expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIR)
+                expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIRECTORY)
                 update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles)
                 if len(expired_tiles) > 0:
-                    render_expired(currently_expired_tiles_file_path)
+                    render_expired(currently_expired_tiles_file_path, action_id)
+                    log.info('marked expired tiles', extra={'action_id': action_id})
                 update_rendered_state_file(rendered_state_file_path, end)
         finally:
             action_id += 1
             time.sleep(RENDER_EXPIRED_TILES_INTERVAL)
 
 
-def render_expired(currently_expired_tiles_file_path):
+def render_expired(currently_expired_tiles_file_path, action_id):
     """
     Render expired tiles
     Args:
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
-    # TODO: consider extracting map, min-zoom and touch-from env var
-    run_subprocess_async(
-        fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom=8 --touch-from=8 >/dev/null', log.info, log.error, True)
-    log.info('rendered expired tiles')
+    command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM} >/dev/null'
+    thread = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
+    thread.join()
 
 
 def get_external_data():
@@ -197,14 +182,16 @@ def get_external_data():
     """
     log.info('getting external data')
     command = 'PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml'
-    run_subprocess_async(command, log.info, log.error, True)
+    thread = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
+    thread.join()
 
 
 def run_apache_service():
     """
     Start apache tile serving service
     """
-    run_subprocess_async('service apache2 start', log.info, log.error)
+    command = 'service apache2 start'
+    _ = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
     log.info('apache2 service started')
 
 
@@ -212,17 +199,17 @@ def run_renderd_service():
     """
     Start renderd service
     """
-    run_subprocess_async('renderd -f -c /usr/local/etc/renderd.conf', log.info, log.error)
+    command = 'renderd -f -c /usr/local/etc/renderd.conf'
+    _ = run_command_async(command, process_log.info, process_log.error, completed_unsuccessfully, completed_successfully)
     log.info('renderd service started')
 
 
 def main():
     log.info('mod-tile container started')
 
-    state_file_path = path.join(EXPIRED_DIR, 'state.txt')
-    currently_expired_tiles_file_path = path.join(
-        EXPIRED_DIR, 'currentlyExpired.list')
-    rendered_state_file_path = path.join(EXPIRED_DIR, 'renderedState.txt')
+    state_file_path = path.join(EXPIRED_DIRECTORY, 'state.txt')
+    currently_expired_tiles_file_path = path.join(EXPIRED_DIRECTORY, 'currentlyExpired.list')
+    rendered_state_file_path = path.join(EXPIRED_DIRECTORY, 'renderedState.txt')
 
     get_external_data()
     run_apache_service()
@@ -231,9 +218,20 @@ def main():
     expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path)
 
 
+def completed_unsuccessfully(exit_code):
+    process_log.error(f'process failed with exit code: {exit_code}')
+    sys.exit(exit_code)
+
+
+def completed_successfully():
+    process_log.info(f'process completed successfully')
+
+
 if __name__ == '__main__':
     # create a dir for the default log file location
     mkdir('/var/log/osm-seed')
     # pass service/process name as a parameter to JSONLogger to be as an identifier for this specific logger instance
-    log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile'})
+    log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile', 'description': 'main log'})
+    process_log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile', 'description': 'process logs'})
+
     main()
