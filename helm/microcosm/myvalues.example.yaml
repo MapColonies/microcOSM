@@ -133,3 +133,21 @@ modTile:
   #   minikube: 'microcosm-mod-tile:v1'
   service:
     nodePort: 30102
+
+# ====================================================================================================
+# Variables for replicationMerger
+# ====================================================================================================
+replicationMerger:
+  timeUnits:
+    -  name: hour
+       based_on: minute
+       interval: 3600
+       max_interval: 0
+    -  name: day
+       based_on: hour
+       interval: 86400
+       max_interval: 0
+    -  name: week
+       based_on: day
+       interval: 604800
+       max_interval: 0
