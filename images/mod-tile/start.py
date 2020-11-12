@@ -128,8 +128,6 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
         currently_expired_tiles_file_path (str): path to currentlyExpired.list file that holds a list of tiles to be re-rendered
         rendered_state_file_path (str): path to a file that holds the current rendered state relative to sequence number
     """
-    action_id = 1  # identifier for each loop
-
     # Infinite loop that sleeps between tiles expirations
     while True:
         try:
@@ -141,10 +139,10 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
             with open(rendered_state_file_path, 'r') as rendered_file:
                 start = extract_positivie_integer_value(rendered_file.read(), 'lastRendered')
 
-            log.info(f'current rendering state is lastRendered={start}, sequenceNumber={end}', extra={'action_id': action_id})
+            log.info(f'rendering loop state', extra={'lastRendered': start, 'sequenceNumber': end})
         except FileNotFoundError as e:
             if e.filename == rendered_state_file_path:
-                log.info('initializing rendering state file', extra={'action_id': action_id})
+                log.info('initializing rendering state file')
                 start = 1
                 with open(rendered_state_file_path, 'w') as rendered_file:
                     rendered_file.write('lastRendered=1')
@@ -157,22 +155,21 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
                 expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIRECTORY)
                 update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles)
                 if len(expired_tiles) > 0:
-                    render_expired(currently_expired_tiles_file_path, action_id)
-                    log.info('marked expired tiles', extra={'action_id': action_id})
+                    render_expired(currently_expired_tiles_file_path)
+                    log.info('marked expired tiles', extra={'lastRendered': start, 'sequenceNumber': end})
                 update_rendered_state_file(rendered_state_file_path, end)
         finally:
-            action_id += 1
             time.sleep(RENDER_EXPIRED_TILES_INTERVAL)
 
 
-def render_expired(currently_expired_tiles_file_path, action_id):
+def render_expired(currently_expired_tiles_file_path):
     """
     Render expired tiles
     Args:
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
-    command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM} >/dev/null'
-    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM}'
+    _ = run_command(command, process_log.debug, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
 
 
 def get_external_data():
