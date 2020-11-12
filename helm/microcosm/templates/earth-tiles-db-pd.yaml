@@ -1,0 +1,55 @@
+{{- if .Values.earthTilesDb.enabled -}}
+{{- if .Values.earthTilesDb.persistenceDisk.enabled -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-db-pv
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: earth-tiles-db-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.earthTilesDb.persistenceDisk.storageSize }}
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - {{ .Values.earthTilesDb.persistenceDisk.accessMode }}
+  # AWS Provider
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }} 
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.efs.volumeHandle }}
+  {{- end }}
+  # minikube provider
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ .Values.minikubeHostPath }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-db-pv-claim
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: db-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }}
+  {{- end }}
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ''
+  {{- end }}
+  volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  accessModes:
+    - {{ .Values.earthTilesDb.persistenceDisk.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.earthTilesDb.persistenceDisk.storageSize }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,7 @@
+pyyaml==5.3.1
+psycopg2==2.8.6
+mapcoloniesjsonlogger==0.0.14
+osmeterium==0.0.1
+pause==0.3
+croniter==0.3.36
+requests==2.25.0

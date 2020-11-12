@@ -1,0 +1,21 @@
+{{- if .Values.earthTilesDb.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-db
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: earth-tiles-db-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      # protocol: TCP
+      # name: http
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-earth-tiles-db
+{{- end }}

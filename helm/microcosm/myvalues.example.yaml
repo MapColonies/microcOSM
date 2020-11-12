@@ -68,6 +68,25 @@ populateApidb:
     URL_FILE_TO_IMPORT: 'https://download.geofabrik.de/europe/andorra-latest.osm.pbf'
 
 # ====================================================================================================
+# Variables for earth tiles database
+# ====================================================================================================
+earthTilesDb:
+  enabled: true
+  #  image:
+  #    minikube: 'microcosm-tiles-db:v1'
+  auth:
+    user: postgres
+    password: '1234'
+
+# ====================================================================================================
+# Variables for earth tiles loader
+# ====================================================================================================
+earthTilesLoader:
+  enabled: true
+  #  image:
+  #    minikube: 'microcosm-earth-tiles-loader:v1'
+
+# ====================================================================================================
 # Variables for vector-tiles-db
 # ====================================================================================================
 vectorTilesDb:

@@ -196,6 +196,53 @@ populateApidb:
       cpu: '2.5'
 
 # ====================================================================================================
+# Variables for earth tiles database for rendering
+# ====================================================================================================
+earthTilesDb:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tiles-db:v1'
+    minikube: 'microcosm-tiles-db:v1'
+  auth:
+    user: postgres
+    password: '1234'
+  env:
+    POSTGRES_DB: gis
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteOnce
+    mountPath: /var/lib/postgresql/data
+    subPath: external-data-db
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '1Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '1'
+
+# ====================================================================================================
+# Variables for earth tiles loader
+# ====================================================================================================
+earthTilesLoader:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-earth-tiles-loader:v1'
+    minikube: 'microcosm-earth-tiles-loader:v1'
+  env:
+    LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
+  resources:
+    enabled: false
+    requests:
+      memory: '1Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'
+
+# ====================================================================================================
 # Variables for vector-tiles-db
 # ====================================================================================================
 vectorTilesDb:

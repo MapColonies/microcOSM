@@ -1,0 +1,103 @@
+{{- if .Values.earthTilesDb.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-db
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: earth-tiles-db-statefulset
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1 # we only ever want one replica of the db
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-earth-tiles-db
+  serviceName: {{ .Release.Name }}-earth-tiles-db
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-earth-tiles-db
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-earth-tiles-db
+          {{- if eq .Values.cloudProvider "aws" }} 
+          image: "{{ .Values.earthTilesDb.image.aws }}"
+          {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: "{{ .Values.earthTilesDb.image.minikube }}"
+          {{- end }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+            - name: POSTGRES_HOST
+              value: {{ .Release.Name }}-earth-tiles-db
+            - name: POSTGRES_DB
+              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: username
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: username
+            - name: PGDATA
+              value: {{ .Values.earthTilesDb.persistenceDisk.mountPath }}
+            - name: POD_IP
+              valueFrom: { fieldRef: { fieldPath: status.podIP } }
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - exec pg_isready --host $POD_IP
+            initialDelaySeconds: 120
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - exec pg_isready --host $POD_IP
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+            periodSeconds: 5
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: {{ .Values.earthTilesDb.persistenceDisk.mountPath }}
+              subPath: {{ .Values.earthTilesDb.persistenceDisk.subPath }}
+          {{- if .Values.earthTilesDb.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ .Values.earthTilesDb.resources.requests.memory }}
+              cpu: {{ .Values.earthTilesDb.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.earthTilesDb.resources.limits.memory }}
+              cpu: {{ .Values.earthTilesDb.resources.limits.cpu }}
+          {{- end }}
+      volumes:
+        - name: postgres-storage
+        {{- if .Values.earthTilesDb.persistenceDisk.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-earth-tiles-db-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+{{- end }}
