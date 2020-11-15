@@ -55,7 +55,6 @@ spec:
             #- name: AWS_S3_BUCKET
             #  value: {{ .Values.AWS_S3_BUCKET }}
             #{{- end }}
-              # Memory optimization for osmosis
       volumes:
         - name: replication-storage
         {{- if .Values.replicationHttpServer.persistenceDisk.enabled }}

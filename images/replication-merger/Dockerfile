@@ -1,5 +1,4 @@
 FROM ubuntu:18.04
-ENV workdir /app
 ENV OSMOSIS_VERSION=0.48.2
 RUN apt-get update && apt-get install -y \
     wget \
@@ -20,10 +19,9 @@ RUN set -x \
   && tar -xzvf osmosis-$OSMOSIS_VERSION.tgz \
   && rm -f osmosis-$OSMOSIS_VERSION.tgz \
   && ln -s /opt/osmosis/bin/osmosis /usr/local/bin/osmosis
-WORKDIR $workdir
-COPY ./start.py .
+WORKDIR /app
 COPY ./requirements.txt .
 RUN pip3 install -r requirements.txt
-RUN chmod a+x ./start.py
+COPY ./start.py .
 CMD ["-u", "./start.py"]
 ENTRYPOINT [ "python3" ]

@@ -58,7 +58,7 @@ def execute_sql_script(script_name):
 
 
 def get_api_db_creation_timestamp():
-    url = '{0}000/000/000.state.txt'.format(replication_url)
+    url = '{0}/000/000/000.state.txt'.format(replication_url)
     log.info('fetching file from {0}'.format(url))
     result = requests.get(url)
 

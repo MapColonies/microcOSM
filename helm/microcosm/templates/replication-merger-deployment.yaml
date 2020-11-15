@@ -33,13 +33,6 @@ spec:
           {{- if eq $.Values.cloudProvider "minikube" }} 
           image: "{{ $.Values.replicationMerger.image.minikube }}"
           {{- end }}
-        #   livenessProbe:
-        #     exec:
-        #       command:
-        #       - pgrep
-        #       - java
-        #     initialDelaySeconds: 5
-        #     periodSeconds: 15
           {{- if $.Values.replicationMerger.resources.enabled }}
           resources:
             requests:
@@ -62,8 +55,6 @@ spec:
               value: {{ .name }}
             - name: TIME_UNIT_BASED_ON
               value: {{ .based_on }}
-            - name: CLOUDPROVIDER
-              value: 'minikube'
             - name: REPLICATION_URL
               value: http://{{ $releaseName }}-replication-http-server
             # In case cloudProvider=aws
