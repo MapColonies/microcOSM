@@ -56,4 +56,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-earth-tiles-db-secret
                   key: username
+            - name: OGR_ENABLE_PARTIAL_REPROJECTION
+              value: 'true'
 {{- end }}

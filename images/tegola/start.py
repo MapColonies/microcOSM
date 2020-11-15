@@ -11,7 +11,6 @@ from osmeterium.run_command import run_command, run_command_async
 EXPIRE_TILES_DIR = os.environ.get('EXPIRE_TILES_DIR', '/mnt/expiretiles')
 CONFIG_PATH = '/opt/tegola_config/config.toml'
 EXPIRE_TILES_LIST_FILE = 'expire_tiles.txt'
-HOST = os.environ['POSTGRES_HOST']
 MAX_ZOOM = os.environ['TILER_CACHE_MAX_ZOOM']
 MIN_ZOOM = os.environ['TILER_CACHE_MIN_ZOOM']
 INTERVAL = os.environ['TILER_CACHE_UPDATE_INTERVAL']

@@ -17,19 +17,13 @@ aws_secret_access_key = "${TILER_CACHE_AWS_SECRET_ACCESS_KEY}"
 [[providers]]
 name = "osm"
 type = "postgis"
-host = "${POSTGRES_HOST}"
+host = "${OSM_POSTGRES_HOST}"
 port = 5432
-database = "${POSTGRES_DB}"
-user = "${POSTGRES_USER}"
-password = "${POSTGRES_PASSWORD}"
+database = "${OSM_POSTGRES_DB}"
+user = "${OSM_POSTGRES_USER}"
+password = "${OSM_POSTGRES_PASSWORD}"
 srid = 3857
 max_connections = 40
-
-	[[providers.layers]]
-	name = "land_8-20"
-	geometry_fieldname = "geometry"
-	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid FROM land_polygons WHERE wkb_geometry && !BBOX!"
 
 	# Water
 	[[providers.layers]]
@@ -203,145 +197,151 @@ max_connections = 40
 [[providers]]
 name = "ne"
 type = "postgis"
-host = "${POSTGRES_HOST}"
+host = "${EARTH_TILES_POSTGRES_HOST}"
 port = 5432
-database = "${POSTGRES_DB}"
-user = "${POSTGRES_USER}"
-password = "${POSTGRES_PASSWORD}"
+database = "${EARTH_TILES_POSTGRES_DB}"
+user = "${EARTH_TILES_POSTGRES_USER}"
+password = "${EARTH_TILES_POSTGRES_PASSWORD}"
 srid = 3857
 max_connections = 40
+
+	[[providers.layers]]
+	name = "land_8-20"
+	geometry_fieldname = "geometry"
+	id_fieldname = "ogc_fid"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid FROM land_polygons WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_110m_populated_places"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_110m_populated_places WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_110m_populated_places WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_populated_places"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_50m_populated_places WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_50m_populated_places WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_populated_places"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_10m_populated_places WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, scalerank, labelrank, name, min_zoom, featurecla, rank_max FROM ne_10m_populated_places WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_0_label_points"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, sr_subunit, scalerank FROM ne_10m_admin_0_label_points WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, sr_subunit, scalerank FROM ne_10m_admin_0_label_points WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_1_label_points"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, name, scalerank FROM ne_10m_admin_1_label_points WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, name, scalerank FROM ne_10m_admin_1_label_points WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_110m_admin_0_boundary_lines_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_110m_admin_0_boundary_lines_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_110m_admin_0_boundary_lines_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_admin_0_boundary_lines_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_50m_admin_0_boundary_lines_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_50m_admin_0_boundary_lines_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_0_boundary_lines_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_10m_admin_0_boundary_lines_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_10m_admin_0_boundary_lines_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_admin_0_boundary_lines_disputed_areas"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_50m_admin_0_boundary_lines_disputed_areas WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_50m_admin_0_boundary_lines_disputed_areas WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_0_boundary_lines_disputed_areas"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_10m_admin_0_boundary_lines_disputed_areas WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, min_zoom FROM ne_10m_admin_0_boundary_lines_disputed_areas WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_110m_admin_0_countries"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_110m_admin_0_countries WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_110m_admin_0_countries WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_admin_0_countries"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_50m_admin_0_countries WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_50m_admin_0_countries WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_0_countries"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_10m_admin_0_countries WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, name_long, abbrev, adm0_a3, min_zoom, min_label, max_label FROM ne_10m_admin_0_countries WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_110m_admin_1_states_provinces_lines"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom FROM ne_110m_admin_1_states_provinces_lines WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom FROM ne_110m_admin_1_states_provinces_lines WHERE way && !BBOX!"
 
     [[providers.layers]]
 	name = "ne_50m_admin_1_states_provinces_lines"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom FROM ne_50m_admin_1_states_provinces_lines WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom FROM ne_50m_admin_1_states_provinces_lines WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_admin_1_states_provinces_lines"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom, min_label FROM ne_10m_admin_1_states_provinces_lines WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, adm0_name, min_zoom, min_label FROM ne_10m_admin_1_states_provinces_lines WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_110m_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_110m_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_110m_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_50m_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_50m_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_land"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_10m_land WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, min_zoom FROM ne_10m_land WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_50m_admin_1_states_provinces_lakes"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, featurecla, name, postal, min_zoom, min_label FROM ne_50m_admin_1_states_provinces_lakes WHERE wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, featurecla, name, postal, min_zoom, min_label FROM ne_50m_admin_1_states_provinces_lakes WHERE way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_roads_3"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, name, min_zoom, min_label, type, label FROM ne_10m_roads WHERE min_zoom < 5 AND type <> 'Ferry Route' AND wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, name, min_zoom, min_label, type, label FROM ne_10m_roads WHERE min_zoom < 5 AND type <> 'Ferry Route' AND way && !BBOX!"
 
 	[[providers.layers]]
 	name = "ne_10m_roads_5"
 	geometry_fieldname = "geometry"
 	id_fieldname = "ogc_fid"
-	sql = "SELECT ST_AsBinary(wkb_geometry) AS geometry, ogc_fid, name, min_zoom, min_label, type, label FROM ne_10m_roads WHERE min_zoom <= 7  AND type <> 'Ferry Route' AND wkb_geometry && !BBOX!"
+	sql = "SELECT ST_AsBinary(way) AS geometry, ogc_fid, name, min_zoom, min_label, type, label FROM ne_10m_roads WHERE min_zoom <= 7  AND type <> 'Ferry Route' AND way && !BBOX!"
 
 
 [[maps]]
@@ -461,7 +461,7 @@ center = [-74.275329586789, -12.153492567373, 8.0] # optional center value. part
 
 	[[maps.layers]]
 	name = "land"
-	provider_layer = "osm.land_8-20"
+	provider_layer = "ne.land_8-20"
 	dont_simplify = true
 	min_zoom = 8
 	max_zoom = 20
