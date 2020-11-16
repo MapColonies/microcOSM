@@ -148,3 +148,4 @@ kubectl scale deployment microcosm-web --replicas=1
 ```
 
 ### Done. now you can edit in openstreetmap :sunglasses:
+![cat](https://i.kym-cdn.com/photos/images/original/001/879/958/fb1.gif)

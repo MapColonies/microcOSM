@@ -1,4 +1,4 @@
-# mod-tile
+# Mod Tile
 
 This container contains the osm rendering components and includes the following: Mapnik, mod_tile, renderd, openstreetmap-carto and Apache.
 Based on the official tutorial of [manually building a tile server on ubuntu 18.04.](https://switch2osm.org/serving-tiles/manually-building-a-tile-server-18-04-lts/)
@@ -12,23 +12,29 @@ renderd uses a software library who does the actual rendering called **Mapnik** 
 After rendering a tile, it gets cached on disk for fast serving using mod_tile. As OSM data is constantly updated, improved and changed, a mechanism is needed to correctly expire the cache to ensure updated tiles get re-rendered.
 Tiles will cached on the `/var/lib/mod_tile` directory by default.
 Apache serves the files as if they were present under `/[MOD_TILE_HOST]:[MOD_TILE_PORT]/[MOD_TILE_PATH]/Z/X/Y.png`
-mod_tile is able to hold multiple mapnik style sheets. At the moment only the **openstreetmap-carto** stylesheet configuration is being used. with every import or update of tiles using the `osm2pgsql` tool style and database tag scheme needs to be specified.
+mod_tile is able to hold multiple mapnik style sheets. At the moment only the **openstreetmap-carto** stylesheet configuration is being used. With every import or update of tiles using the `osm2pgsql` tool style and database tag scheme needs to be specified.
 
 For tiles to reflect the last update they need to be deleted or tagged as expired to force their being rerendered.
 Expired tiles are being re-rendered in a loop every configured interval (`RENDER_EXPIRED_TILES_INTERVAL`).
-Every replication (osmChange file) created by the `replication-job` container will be processed by `osm2pgsql` which in turn will send the expired tiles list to `/mnt/expired/` directory. The expired tiles will be rendered by mod_tile.
-The sequence number of last rendered replication will be stated in `/mnt/expired/state.txt` as `lastRendered` key.
+Every replication (osmChange file) created by the `replication-job` container will be processed by `osm2pgsql` which in turn will send the expired tiles list to `[EXPIRED_DIRECTORY]` directory. The expired tiles will be rendered by mod_tile.
+The sequence number of last rendered replication will be stated in `[EXPIRED_DIRECTORY]/renderedState.txt` as `lastRendered` key.
 
 ### Configuration
 
 **Env Variables**
 
 - `RENDER_EXPIRED_TILES_INTERVAL` the interval in seconds for mod_tile to expire tiles and rerender them.
+- `TILE_EXPIRE_MIN_ZOOM` minimum zoom level to expire tiles from, e.g. 14
 - `MOD_TILE_HOST` e.g `localhost`
 - `MOD_TILE_PORT` e.g `1337`
 - `MOD_TILE_PATH` e.g `hot`
-- `REPLICATION_DIR` the inner directory path for mounted replications
-- `EXPIRED_DIR` the inner directory path for the expired lists
+- `EXPIRED_DIRECTORY` the inner directory path for the expired lists, e.g. /mnt/expired/
+
+- `POSTGRES_HOST` tiler db for rendering host
+- `POSTGRES_PORT` tiler db for rendering port
+- `POSTGRES_DB` tiler db for rendering db
+- `POSTGRES_USER` tiler db for rendering user
+- `POSTGRES_PASSWORD` tiler db for rendering password
 
 **Files**
 
