@@ -16,13 +16,14 @@ After rendering a tile, it gets cached on disk for fast serving. As OSM data is 
 - `osm2pgsql` reads the osmChanges from `REPLICATION_DIR` and appends the data onto the `tiler-db`, every append is configured with style and rules that indicate the data scheme and affects how `mod-tile`'s renderd will render the tiles.
 - Each append outputs an expired tiles list - the tiles whose data has been updated in the append, the lists is being saved in `EXPIRED_DIR`.
 - A list of all the expired tiles since the last render will be composed and saved in `EXPIRED_DIR/currentlyExpired.list`, for performance duplicates will be removed.
-- `mod-tile`'s `mod_tile` will call for a re-render on the tiles specified in the `currentlyExpired.list` and will cache them on the disk til next update.
-- The tiles will be served by `tile-renderer`'s `mod_tile` for clients on the `openstreetmap-website`
+- `mod-tile`'s `mod_tile` will expire the cached tiles specified in the `currentlyExpired.list` and will re-render and cache them on the disk when they will be requested from `mod_tile`.
+- The tiles will be served by `mod-tile`'s `mod_tile` for clients on the `openstreetmap-website`
 
-The state of the rendered tiles is being tracked in a `state.txt` file located in `EXPIRED_DIR` where `sequenceNumber`, `lastRendered` and `lastExpired` are specified.
-
-- `sequenceNumber` - each osm2pgsql append function is fetching the last replication `sequenceNumber` from `replication-job` container and saves it also on the `EXPIRED_DIR\state.txt`
-- `lastExpired` - the last replication sequenceNumber expired by `osm2pgsql` append.
-- `lastRendered` - the last rendered replication `sequenceNumber` rendered by `mod-tile`.
+The state of the rendered tiles is being tracked by `state.txt` and `renderedState.txt` files located in `EXPIRED_DIR`
+- `state.txt`
+    - `sequenceNumber` - each osm2pgsql append function is fetching the last replication `sequenceNumber` from `replication-job` container and saves it in `state.txt`
+    - `lastExpired` - the last replication sequenceNumber expired by `osm2pgsql` append.
+- `renderedState.txt`
+    - `lastRendered` - the last rendered replication `sequenceNumber` marked expired by `mod-tile`.
 
 ![Alt text](./microcosm-renderer-diagram.png?raw=true 'Diagram')
