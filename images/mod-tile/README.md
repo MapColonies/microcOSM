@@ -30,11 +30,17 @@ The sequence number of last rendered replication will be stated in `[EXPIRED_DIR
 - `MOD_TILE_PATH` e.g `hot`
 - `EXPIRED_DIRECTORY` the inner directory path for the expired lists, e.g. /mnt/expired/
 
-- `POSTGRES_HOST` tiler db for rendering host
-- `POSTGRES_PORT` tiler db for rendering port
-- `POSTGRES_DB` tiler db for rendering db
-- `POSTGRES_USER` tiler db for rendering user
-- `POSTGRES_PASSWORD` tiler db for rendering password
+- `OSM_POSTGRES_HOST` db with osm data for rendering host
+- `OSM_POSTGRES_PORT` db with osm data for rendering port
+- `OSM_POSTGRES_DB` db with osm data for rendering db
+- `OSM_POSTGRES_USER` db with osm data for rendering user
+- `OSM_POSTGRES_PASSWORD` db with osm data for rendering password
+
+- `EARTH_TILES_POSTGRES_HOST` db with earth tiles for rendering host
+- `EARTH_TILES_POSTGRES_PORT` db with earth tiles for rendering port
+- `EARTH_TILES_POSTGRES_DB` db with osm data for rendering db
+- `EARTH_TILES_POSTGRES_USER` db with osm data for rendering user
+- `EARTH_TILES_POSTGRES_PASSWORD` db with osm data for rendering password
 
 **Files**
 

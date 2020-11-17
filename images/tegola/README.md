@@ -8,11 +8,17 @@ Required environment variables:
 
 **Env variables to connect to the db-tiler**
 
-- `POSTGRES_HOST` e.g `tiler-db`
-- `POSTGRES_DB` e.g `tiler-osm`
-- `POSTGRES_PORT` e.g `5432`
-- `POSTGRES_USER` e.g `postgres`
-- `POSTGRES_PASSWORD` e.g `1234`
+- `OSM_POSTGRES_HOST` db with osm data for rendering host
+- `OSM_POSTGRES_PORT` db with osm data for rendering port
+- `OSM_POSTGRES_DB` db with osm data for rendering db
+- `OSM_POSTGRES_USER` db with osm data for rendering user
+- `OSM_POSTGRES_PASSWORD` db with osm data for rendering password
+
+- `EARTH_TILES_POSTGRES_HOST` db with earth tiles for rendering host
+- `EARTH_TILES_POSTGRES_PORT` db with earth tiles for rendering port
+- `EARTH_TILES_POSTGRES_DB` db with osm data for rendering db
+- `EARTH_TILES_POSTGRES_USER` db with osm data for rendering user
+- `EARTH_TILES_POSTGRES_PASSWORD` db with osm data for rendering password
 
 \*\*
 
