@@ -8,16 +8,22 @@ from jsonlogger.logger import JSONLogger
 from osmeterium.run_command import run_command_async, run_command
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
+CARTO_FILE = '/src/openstreetmap-carto/project.mml'
 
 EXPIRED_DIRECTORY = environ.get('EXPIRED_DIRECTORY', '/mnt/expired')
 RENDER_EXPIRED_TILES_INTERVAL = float(environ.get('RENDER_EXPIRED_TILES_INTERVAL', 60))
 TILE_EXPIRE_MIN_ZOOM = int(environ.get('TILE_EXPIRE_MIN_ZOOM', 14))
 
-environ['PGHOST'] = environ['POSTGRES_HOST']
-environ['PGPORT'] = environ['POSTGRES_PORT']
-environ['PGDATABASE'] = environ['POSTGRES_DB']
-environ['PGUSER'] = environ['POSTGRES_USER']
-environ['PGPASSWORD'] = environ['POSTGRES_PASSWORD']
+db_config = {
+  'osm_db_name':environ['OSM_POSTGRES_DB'],
+  'osm_host':environ['OSM_POSTGRES_HOST'],
+  'osm_password':environ['OSM_POSTGRES_PASSWORD'],
+  'osm_user':environ['OSM_POSTGRES_USER'],
+  'et_db_name':environ['EARTH_TILES_POSTGRES_DB'],
+  'et_host':environ['EARTH_TILES_POSTGRES_HOST'],
+  'et_password':environ['EARTH_TILES_POSTGRES_PASSWORD'],
+  'et_user':environ['EARTH_TILES_POSTGRES_USER']
+}
 
 
 def extract_positivie_integer_value(text, key):
@@ -172,15 +178,6 @@ def render_expired(currently_expired_tiles_file_path):
     _ = run_command(command, process_log.debug, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
 
 
-def get_external_data():
-    """
-    Populate openstreetmap-carto's external data sources to postgresql
-    """
-    log.info('getting external data')
-    command = 'PGPASSWORD=$POSTGRES_PASSWORD /src/openstreetmap-carto/scripts/get-external-data.py -H $POSTGRES_HOST -d $POSTGRES_DB -p 5432 -U $POSTGRES_USER -c /src/openstreetmap-carto/external-data.yml'
-    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
-
-
 def run_apache_service():
     """
     Start apache tile serving service
@@ -199,6 +196,20 @@ def run_renderd_service():
     log.info('renderd service started')
 
 
+def configure_carto_project():
+    log.info('configuring the carto project')
+    with open(CARTO_FILE, 'r') as file :
+      carto_data = file.read()
+
+    for placeholder, value in db_config.items():
+      carto_data = carto_data.replace(placeholder, value)
+
+    with open(CARTO_FILE, 'w') as file:
+      file.write(carto_data)
+
+    command = 'carto {} > /src/openstreetmap-carto/mapnik.xml'.format(CARTO_FILE)
+    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+
 def main():
     log.info('mod-tile container started')
 
@@ -206,7 +217,7 @@ def main():
     currently_expired_tiles_file_path = path.join(EXPIRED_DIRECTORY, 'currentlyExpired.list')
     rendered_state_file_path = path.join(EXPIRED_DIRECTORY, 'renderedState.txt')
 
-    get_external_data()
+    configure_carto_project()
     run_apache_service()
     run_renderd_service()
     expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path)

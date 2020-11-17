@@ -57,24 +57,38 @@ spec:
           {{- end }}
           env:
               # tiler-db env variables
-            - name: POSTGRES_HOST
+            - name: OSM_POSTGRES_HOST
               value: {{ .Release.Name }}-rasterized-tiles-db
-            - name: POSTGRES_DB
+            - name: OSM_POSTGRES_DB
               value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
-            - name: POSTGRES_PASSWORD
+            - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: password  
-            - name: POSTGRES_PORT
+            - name: OSM_POSTGRES_PORT
               value: {{ quote .Values.rasterizedTilesDb.env.POSTGRES_PORT }}
-            - name: POSTGRES_USER
+            - name: OSM_POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: username       
-            - name: POSTGRES_PORT
+            - name: OSM_POSTGRES_PORT
               value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+            - name: EARTH_TILES_POSTGRES_HOST
+              value: {{ .Release.Name }}-earth-tiles-db
+            - name: EARTH_TILES_POSTGRES_DB
+              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+            - name: EARTH_TILES_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: password
+            - name: EARTH_TILES_POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: username
             - name: EXPIRED_DIR
               value: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
             - name: RENDER_EXPIRED_TILES_INTERVAL
