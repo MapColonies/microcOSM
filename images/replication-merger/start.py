@@ -3,7 +3,6 @@ import os
 import shutil
 import sys
 import re
-import subprocess
 import requests
 import pytz
 import pause
@@ -59,7 +58,7 @@ class TimeUnit:
         return result
 
 def handle_osmosis_exit_code(exit_code):
-    log.error(fr'The subprocess raised an error: {exit_code}')
+    log.error(fr'Osmosis raised an error: {exit_code}')
     raise
 
 def read_file(file_path, throw_not_found=False):
@@ -172,9 +171,9 @@ def parse_time_unit_config(config_content, fetch_from_file_system = False):
     interval_length = extract_positive_number(config_content, MERGE_CONFIG_MAP['INTERVAL_LENGTH'])
     max_interval = extract_positive_number(config_content, MERGE_CONFIG_MAP['MAX_INTERVAL'])
     if fetch_from_file_system:
-        sub_time_unit_data_dir = extract_value(config_content, MERGE_CONFIG_MAP['BASE_URL'], False, MERGE_CONF_BASE_URL_HEADER)
+        sub_time_unit_data_dir = extract_value(content=config_content, key=MERGE_CONFIG_MAP['BASE_URL'], is_int_value=False, delimiter=MERGE_CONF_BASE_URL_HEADER)
     else:
-        sub_time_unit_data_dir = extract_value(config_content, MERGE_CONFIG_MAP['BASE_URL'], False, REPLICATION_URL + '/')
+        sub_time_unit_data_dir = extract_value(content=config_content, key=MERGE_CONFIG_MAP['BASE_URL'], is_int_value=False, delimiter=REPLICATION_URL + '/')
     return { 'interval_length': interval_length, 'max_interval': max_interval, 'sub_time_unit_data_dir': sub_time_unit_data_dir }
 
 def http_fetch_starting_state(time_unit):
