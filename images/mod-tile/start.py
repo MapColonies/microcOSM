@@ -208,7 +208,7 @@ def configure_carto_project():
       file.write(carto_data)
 
     command = 'carto {} > /src/openstreetmap-carto/mapnik.xml'.format(CARTO_FILE)
-    _ = run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
 
 def main():
     log.info('mod-tile container started')

@@ -65,8 +65,6 @@ RUN git clone git://github.com/gravitystorm/openstreetmap-carto.git && \
   cd openstreetmap-carto && \
   apt -y install npm nodejs && \
   npm install -g carto
-  # sed -i '/dbname: "gis"/d' project.mml && \
-  # carto project.mml > mapnik.xml
 COPY ./config/project.mml ./openstreetmap-carto/project.mml
 # configure apache2, mod_tile & renderd
 COPY ./config/renderd.conf /usr/local/etc/renderd.conf

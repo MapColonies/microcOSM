@@ -14,6 +14,7 @@ pg_host = os.environ['POSTGRES_HOST']
 pg_db = os.environ['POSTGRES_DB']
 pg_port = os.environ.get('POSTGRES_PORT', default=5432)
 
+skip_load_on_startup = os.environ.get('SKIP_LOAD_ON_STARTUP', 'False')
 cron_expression = os.environ['LOAD_EXTERNAL_SCHEDULE_CRON']
 config_file = os.environ.get('CONFIG_FILE_PATH', default='external-data.yaml')
 
@@ -27,7 +28,7 @@ def on_command_error(exit_code):
 
 
 def load_data():
-    command = 'PGPASSWORD={0} ./get-external-data.py -H {1} -d {2} -p {3} -U {4} -c {5}'.format(
+    command = 'PGPASSWORD={0} get-external-data.py -H {1} -d {2} -p {3} -U {4} -c {5}'.format(
         pg_password, pg_host, pg_db, pg_port, pg_user, config_file)
     log.info('starting to load the data')
     run_command(command, log.info, log.error, on_command_error, lambda: None)
@@ -35,7 +36,10 @@ def load_data():
 
 
 def main():
-    load_data()
+    # check if script should load data on startup
+    if not skip_load_on_startup.lower() == 'true': 
+        load_data()
+
     iter = croniter(expr_format=cron_expression, start_time=datetime.now())
     while True:
         execute_time = iter.get_next(datetime)

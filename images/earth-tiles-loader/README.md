@@ -6,8 +6,9 @@ This container loads and updates the data required by the rendering stacks. It d
 
 **Env Variables**
 
-- `LOAD_EXTERNAL_SCHEDULE_CRON` the schedule to update the data
+- `LOAD_EXTERNAL_SCHEDULE_CRON` cron expression to schedule when to update the data
 - `CONFIG_FILE_PATH` the optional path inside the container to the config file
+- `SKIP_LOAD_ON_STARTUP` if the container should only follow the schedule, and not load on startup, put `True` as the value
 
 - `POSTGRES_HOST`
 - `POSTGRES_PORT`
