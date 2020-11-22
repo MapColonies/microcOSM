@@ -57,7 +57,7 @@ spec:
           - name: CONFIG_REPLICATION_INTERVAL
             value: {{ .Values.imposm.env.CONFIG_REPLICATION_INTERVAL }}
           - name: IMPOSM_REPLICATION_URL
-            value: http://{{ .Release.Name }}-replication-job/
+            value: http://{{ .Release.Name }}-replication-http-server/minute/
           - name: CONFIG_EXPIRED_TILES_ZOOM
             value: {{ quote .Values.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
           - name: CONFIG_EXPIRED_TILES_DIR

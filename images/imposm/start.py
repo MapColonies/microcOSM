@@ -27,6 +27,7 @@ cache_dir_path = '/mnt/data/cache'
 diff_dir_path = '/mnt/data/diff'
 expired_tiles_dir_path = os.environ['CONFIG_EXPIRED_TILES_DIR']
 replication_url = os.environ['IMPOSM_REPLICATION_URL']
+last_state_file = 'last.state.txt'
 
 db_init_table_name = 'goad'
 
@@ -103,6 +104,10 @@ def on_command_fail(command_name, exit_code):
     sys.exit(1)
 
 
+def is_last_state_exists():
+    return os.path.isfile(os.path.join(diff_dir_path, last_state_file))
+
+
 def initialize_db():
     # set the pbf file time to match the db creation time
     execute_sql_script(sql_helpers)
@@ -115,6 +120,10 @@ def initialize_db():
         pbf_file, diff_dir_path, cache_dir_path)
     run_command(init_command, log.info, log.error,
                 lambda exit_code: on_command_fail('imposm import', exit_code), lambda: None)
+
+    if not is_last_state_exists():
+        log.error(f'{last_state_file} is missing, could not update data')
+        sys.exit(1)
 
     deploy_command = 'imposm import -config config.json -deployproduction'
     run_command(deploy_command, log.info, log.error,

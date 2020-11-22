@@ -1,0 +1,83 @@
+{{- $releaseName := .Release.Name -}}
+{{- $name := include "microcosm.name" . -}}
+{{- if .Values.replicationMerger.enabled -}}
+{{- range .Values.replicationMerger.timeUnits }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $releaseName }}-replication-merger-{{ .name }}
+  labels:
+    app: {{ $name }}
+    component: replication-merger-{{ .name }}
+    environment: {{ $.Values.environment }}
+    release: {{ $releaseName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $name }}
+      release: {{ $releaseName }}
+      run: {{ $releaseName }}-replication-merger-{{ .name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}
+        release: {{ $releaseName }}
+        run: {{ $releaseName }}-replication-merger-{{ .name }}
+    spec:
+      containers:
+        - name: {{ $releaseName }}-replication-merger-{{ .name }}-deployment
+          {{- if eq $.Values.cloudProvider "aws" }} 
+          image: "{{ $.Values.replicationMerger.image.aws }}"
+          {{- end }}
+          {{- if eq $.Values.cloudProvider "minikube" }} 
+          image: "{{ $.Values.replicationMerger.image.minikube }}"
+          {{- end }}
+          {{- if $.Values.replicationMerger.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ $.Values.replicationMerger.resources.requests.memory }}
+              cpu: {{ $.Values.replicationMerger.resources.requests.cpu }}
+            limits:
+              memory: {{ $.Values.replicationMerger.resources.limits.memory }}
+              cpu: {{ $.Values.replicationMerger.resources.limits.cpu }}
+          {{- end }}
+          volumeMounts:
+            - name: replication-storage
+              mountPath: {{ $.Values.replicationMerger.persistenceDisk.mountPath }}/{{ .name }}
+            - name: replication-config
+              mountPath: /app/config
+              readOnly: true
+          env:
+            - name: REPLICATION_MERGE_INTERVAL
+              value: {{ quote .interval }}
+            - name: TIME_UNIT_TO_MERGE
+              value: {{ .name }}
+            - name: TIME_UNIT_BASED_ON
+              value: {{ .based_on }}
+            - name: REPLICATION_URL
+              value: http://{{ $releaseName }}-replication-http-server
+            # In case cloudProvider=aws
+            #{{- if eq $.Values.cloudProvider "aws" }}
+            #- name: AWS_S3_BUCKET
+            #  value: {{ $.Values.AWS_S3_BUCKET }}
+            #{{- end }}
+              # Memory optimization for osmosis
+            {{- if $.Values.replicationMerger.resources.enabled }}
+            - name: MEMORY_JAVACMD_OPTIONS
+              value: {{ $.Values.replicationMerger.resources.requests.memory | default "2Gi" | quote}}
+            {{- end }}
+      volumes:
+        - name: replication-storage
+        {{- if $.Values.replicationMerger.persistenceDisk.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ $releaseName }}-replication-merger-{{ .name }}-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: replication-config
+          configMap:
+            name: {{ $releaseName }}-replication-merger-configmap
+---
+{{- end -}}
+{{- end -}}

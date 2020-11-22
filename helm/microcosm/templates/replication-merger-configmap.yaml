@@ -1,0 +1,18 @@
+{{- $releaseName := .Release.Name -}}
+{{- if $.Values.replicationMerger.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $releaseName }}-replication-merger-configmap
+data:
+{{ range .Values.replicationMerger.timeUnits }}
+  {{ .name }}-config.txt: |-
+    {{- if eq .based_on "minute" }}
+    baseUrl=http://{{ $releaseName }}-replication-http-server/{{ .based_on }}
+    {{- else }}
+    baseUrl=http://{{ $releaseName }}-replication-http-server/{{ .based_on }}/data
+    {{- end }}
+    intervalLength={{ .interval }}
+    maxInterval={{ .max_interval }}
+{{- end }}
+{{- end }}

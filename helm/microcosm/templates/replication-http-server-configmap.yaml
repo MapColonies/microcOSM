@@ -1,8 +1,8 @@
-{{- if .Values.replicationJob.enabled -}}
+{{- if .Values.replicationHttpServer.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-replication-job-configmap
+  name: {{ .Release.Name }}-replication-http-server-configmap
 data:
   default.conf: |-
     server {

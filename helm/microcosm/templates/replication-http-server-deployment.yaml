@@ -1,0 +1,69 @@
+{{- if .Values.replicationHttpServer.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-replication-http-server
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: replication-http-server
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-replication-http-server
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-replication-http-server
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-replication-http-server
+          image: {{ .Values.images.nginx }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 360
+            timeoutSeconds: 30
+          volumeMounts:
+            - name: replication-storage
+              mountPath: {{ .Values.replicationHttpServer.persistenceDisk.mountPath }}
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+          {{- if .Values.replicationHttpServer.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ .Values.replicationHttpServer.resources.requests.memory }}
+              cpu: {{ .Values.replicationHttpServer.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.replicationHttpServer.resources.limits.memory }}
+              cpu: {{ .Values.replicationHttpServer.resources.limits.cpu }}
+          {{- end }}
+
+          env:
+            - name: CLOUDPROVIDER
+              value: 'minikube'
+            # In case cloudProvider=aws
+            #{{- if eq .Values.cloudProvider "aws" }}
+            #- name: AWS_S3_BUCKET
+            #  value: {{ .Values.AWS_S3_BUCKET }}
+            #{{- end }}
+      volumes:
+        - name: replication-storage
+        {{- if .Values.replicationHttpServer.persistenceDisk.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-replication-http-server-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+        - name: nginx-conf
+          configMap:
+            name: {{ .Release.Name }}-replication-http-server-configmap
+{{- end }}

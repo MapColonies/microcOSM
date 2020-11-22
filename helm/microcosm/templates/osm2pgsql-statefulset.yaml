@@ -59,7 +59,7 @@ spec:
           - name: EXPIRED_DIR
             value: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
           - name: REPLICATION_URL
-            value: http://{{ .Release.Name }}-replication-job/
+            value: http://{{ .Release.Name  }}-replication-http-server/minute
         volumeMounts:
         - mountPath: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
           name: osm2pgsql-expired-storage

@@ -1,0 +1,60 @@
+{{- $releaseName := .Release.Name -}}
+{{- $name := include "microcosm.name" . -}}
+{{- if $.Values.replicationMerger.enabled -}}
+{{- if $.Values.replicationMerger.persistenceDisk.enabled -}}
+{{- range .Values.replicationMerger.timeUnits }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ $releaseName }}-replication-merger-{{ .name }}-pv
+  labels:
+    app: {{ $name }}
+    component: replicationMerger{{ .name | upper }}-pd
+    environment: {{ $.Values.environment }}
+    release: {{ $releaseName }}
+spec:
+  capacity:
+    storage: {{ $.Values.replicationMerger.persistenceDisk.storageSize }}
+  accessModes:
+    - {{ $.Values.replicationMerger.persistenceDisk.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  # AWS Provider
+  storageClassName: {{ $.Values.efs.storageClass }} 
+  {{- if eq $.Values.cloudProvider "aws" }}
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ $.Values.efs.volumeHandle }}:{{ $.Values.replicationMerger.persistenceDisk.subPath }}/{{ .name }}
+  {{- end }}
+  # minikube provider
+  {{- if eq $.Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ $.Values.minikubeHostPath }}/{{ $.Values.replicationMerger.persistenceDisk.subPath }}/{{ .name }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $releaseName }}-replication-merger-{{ .name }}-pv-claim
+  labels:
+    app: {{ $name }}
+    component: db-pd
+    environment: {{ $.Values.environment }}
+    release: {{ $releaseName }}
+spec:
+  {{- if eq $.Values.cloudProvider "aws" }}
+  storageClassName: {{ $.Values.efs.storageClass }}
+  {{- end }}
+  {{- if eq $.Values.cloudProvider "minikube" }}
+  storageClassName: ''
+  {{- end }}
+  volumeName: {{ $releaseName }}-replication-merger-{{ .name }}-pv
+  accessModes:
+    - {{ $.Values.replicationMerger.persistenceDisk.accessMode }}
+  resources:
+    requests:
+      storage: {{ $.Values.replicationMerger.persistenceDisk.storageSize }}
+---
+{{- end }}
+{{- end }}
+{{- end -}}

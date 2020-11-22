@@ -23,20 +23,6 @@ spec:
         run: {{ .Release.Name }}-replication-job
     spec:
       containers:
-        - name: {{ .Release.Name }}-replication-job-nginx
-          image: {{ .Values.images.nginx }}
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 360
-            timeoutSeconds: 30
-          volumeMounts:
-            - name: replication-storage
-              mountPath: /usr/share/nginx/html
-            - name: nginx-conf
-              mountPath: /etc/nginx/conf.d
-              readOnly: true
         - name: {{ .Release.Name }}-replication-job-deployment
           {{- if eq .Values.cloudProvider "aws" }} 
           image: "{{ .Values.replicationJob.image.aws }}"
@@ -102,7 +88,4 @@ spec:
         {{- else }}
           emptyDir: {}
         {{- end }}
-        - name: nginx-conf
-          configMap:
-            name: {{ .Release.Name }}-replication-job-configmap
 {{- end }}
