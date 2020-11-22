@@ -47,7 +47,7 @@ RUN add-apt-repository multiverse && apt update && apt -y install libboost-all-d
 ENV workdir=/src
 WORKDIR $workdir
 # mod_tile
-RUN git clone -b switch2osm git://github.com/SomeoneElseOSM/mod_tile.git && \
+RUN git clone -b 0.5 git://github.com/openstreetmap/mod_tile.git && \
   cd mod_tile && \
   ./autogen.sh && \
   ./configure && \
