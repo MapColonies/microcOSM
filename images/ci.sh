@@ -11,7 +11,7 @@ for d in */ ; do
     foldername=${filename%.*}
     echo $filename
     echo -e "running docker build -t microcosm-${foldername}:$TAG ${d}${NC}"
-    echo docker build -q -t $SHA -t $ECR/$foldername:$TAG
-    echo docker push $ECR/$foldername:$TAG
+    docker build -q -t $SHA -t $ECR/$foldername:$TAG
+    docker push $ECR/$foldername:$TAG
   fi
 done
