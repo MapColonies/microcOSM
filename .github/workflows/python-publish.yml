@@ -27,7 +27,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: add permissions
-        #run: chmod +x /images/ci.sh 
-        run: echo $PWD
-      - name: add permissions        
+        run: chmod +x /images/ci.sh 
+        #run: echo $PWD
+      - name: run script
         run: ./images/ci.sh
