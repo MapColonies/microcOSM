@@ -1,0 +1,55 @@
+{{- if .Values.planetDump.enabled -}}
+{{- if .Values.planetDump.persistenceDisk.enabled -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-planet-dump-pv
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: planetDump-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.planetDump.persistenceDisk.storageSize }}
+  accessModes:
+    - {{ .Values.planetDump.persistenceDisk.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  # AWS Provider
+  storageClassName: {{ .Values.efs.storageClass }} 
+  {{- if eq .Values.cloudProvider "aws" }}
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.planetDump.persistenceDisk.subPath }}
+  {{- end }}
+  # minikube provider
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ .Values.minikubeHostPath }}/{{ .Values.planetDump.persistenceDisk.subPath }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-planet-dump-pv-claim
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: db-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }}
+  {{- end }}
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ''
+  {{- end }}
+  volumeName: {{ .Release.Name }}-planet-dump-pv
+  accessModes:
+    - {{ .Values.planetDump.persistenceDisk.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.planetDump.persistenceDisk.storageSize }}
+{{- end }}
+{{- end }}

@@ -139,11 +139,19 @@ dbbackup:
 # Variables for microcosm for osmosis, this configuration os to get the planet dump files from apidb
 # ====================================================================================================
 planetDump:
-  enabled: false
-  image: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:planet-dump'
-  schedule: '0 */1 * * *'
+  enabled: true
+  image: 
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-planet-dump'
+    minikube: microcosm-planet-dump:v1
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    mountPath: /mnt/dump
+    subPath: planet-dumps
+    # In case cloudProvider: aws
+    storageSize: 5Gi
   env:
-    CLEAN_BACKUPS: true
+    CREATE_DUMP_SCHEDULE: '0/1 * * * *'
   resources:
     enabled: false
     requests:
