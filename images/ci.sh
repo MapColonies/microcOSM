@@ -2,7 +2,7 @@
 #!/bin/bash
 set -e
 SHA=$(git rev-parse HEAD)
-TAG=$(git-describe)
+TAG=$(git describe)
 ECR=http://645470188746.dkr.ecr.eu-west-1.amazonaws.com
 echo $SHA
 for d in */ ; do
