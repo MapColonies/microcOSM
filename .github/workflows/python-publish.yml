@@ -26,8 +26,8 @@ jobs:
       - uses: actions/checkout@v2
 
       # Runs a single command using the runners shell
-      - name: add permissions
-        run: chmod +x images/ci.sh 
-        #run: echo $PWD
       - name: run script
-        run: cd images | ./ci.sh
+        run: | 
+          chmod +x images/ci.sh 
+          cd images
+          ./ci.sh
