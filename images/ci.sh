@@ -4,7 +4,7 @@ set -e
 SHA=$(git rev-parse HEAD)
 TAG=$(git tag)
 ECR=http://645470188746.dkr.ecr.eu-west-1.amazonaws.com
-echo $SHA
+echo $TAG
 for d in */ ; do
   if [ -f "${d}Dockerfile" ]; then
     filename=$(basename -- "$d")
