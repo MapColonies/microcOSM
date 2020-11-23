@@ -30,4 +30,4 @@ jobs:
         run: chmod +x images/ci.sh 
         #run: echo $PWD
       - name: run script
-        run: ./images/ci.sh
+        run: cd images | ./ci.sh
