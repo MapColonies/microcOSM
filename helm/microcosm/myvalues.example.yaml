@@ -50,6 +50,17 @@ web:
     nodePort: 30100
 
 # ====================================================================================================
+# Variables for microcosm for planet-dump from the apidb
+# ====================================================================================================
+planetDump:
+  enabled: true
+  # image: 
+  #   aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-planet-dump'
+  #   minikube: microcosm-planet-dump:v1
+  env:
+    CREATE_DUMP_SCHEDULE_CRON: '0 0 * * 0'
+
+# ====================================================================================================
 # Variables for replication-job, Configuration to create the replication files by, minute, hour, or day
 # ====================================================================================================
 replicationJob:

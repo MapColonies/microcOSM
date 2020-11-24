@@ -136,7 +136,7 @@ dbbackup:
       cpu: '0.6'
 
 # ====================================================================================================
-# Variables for microcosm for osmosis, this configuration os to get the planet dump files from apidb
+# Variables for microcosm for planet-dump from the apidb
 # ====================================================================================================
 planetDump:
   enabled: true
@@ -151,7 +151,7 @@ planetDump:
     # In case cloudProvider: aws
     storageSize: 5Gi
   env:
-    CREATE_DUMP_SCHEDULE: '0 0 * * *'
+    CREATE_DUMP_SCHEDULE_CRON: '0 0 * * 0'
   resources:
     enabled: false
     requests:
