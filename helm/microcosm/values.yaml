@@ -274,22 +274,6 @@ vectorTilesDb:
       memory: '2Gi'
       cpu: '2.5'
 
-# ====================================================================================================
-# Variables for microcosm to populate the vector tiles db
-# ====================================================================================================
-populateVectorTilesDb:
-  enabled: true
-  image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/populate-vector-tiles-db:v1'
-    minikube: 'microcosm-populate-vector-tiles-db:v1'
-  resources:
-    enabled: false
-    requests:
-      memory: '1Gi'
-      cpu: '1'
-    limits:
-      memory: '2Gi'
-      cpu: '2.5'
 
 # ====================================================================================================
 # Variables for imposm

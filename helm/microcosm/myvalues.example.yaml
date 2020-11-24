@@ -97,13 +97,6 @@ vectorTilesDb:
     user: postgres
     password: '1234'
 
-# ====================================================================================================
-# Variables for microcosm to populate the vector tiles db
-# ====================================================================================================
-populateVectorTilesDb:
-  enabled: true
-  # image:
-  #   minikube: 'microcosm-populate-vector-tiles-db:v1'
 
 # ====================================================================================================
 # Variables for imposm
