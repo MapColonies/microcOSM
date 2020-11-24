@@ -60,7 +60,7 @@ spec:
           - name: CREATE_DUMP_SCHEDULE
             value: {{ .Values.planetDump.env.CREATE_DUMP_SCHEDULE }}
           - name: DUMP_STORAGE_FOLDER
-            value: {{ .Values.planetDump.env.DUMP_STORAGE_FOLDER}}
+            value: {{ .Values.planetDump.persistenceDisk.mountPath }}
       volumes:
         - name: dump-storage
         {{- if .Values.replicationJob.persistenceDisk.enabled }}

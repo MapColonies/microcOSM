@@ -1,37 +1,17 @@
 ### Planet dump Container
 
-Dockerfile definition to run a container with `osmosis` installed. This container definition will be responsible to create the planet dump in PBF format according to a schedule.
+A container to create periodeclly planet dumps (pbf files), of the OSM database.
 
-### Configuration
-
-This container needs some environment variables passed into it in order to run:
+### Environment variables 
 
 - `POSTGRES_HOST` - db
 - `POSTGRES_DB` - openstreetmap
 - `POSTGRES_USER` - postgres
 - `POSTGRES_PASSWORD` - 1234
 
-The following env variables are according to which cloud provider you are going to use:
+- `CREATE_DUMP_SCHEDULE` - When to create a dump in CRON pattern
+- `DUMP_STORAGE_FOLDER` - the directory inside the container in which to store the created dumps
+- `DUMP_FILE_PREFIX` - Prefix to each dump file
+- `OSMOSIS_OMIT_METADATA` - Variable whetever dumps should contain the metadata (users, changeset id)
 
-- `CLOUDPROVIDER`, eg. `aws`
 
-In case AWS:
-
-- `AWS_S3_BUCKET` e.g `s3://microcosm-test`
-
-#### Building the container
-
-```
-    cd planet-dump
-    docker network create microcosm_default
-    docker build -t microcosm-planet-dump:v1 .
-```
-
-#### Running the container
-
-```
-docker run \
---env-file ./../.env \
---network microcosm_default \
--it microcosm-planet-dump:v1
-```

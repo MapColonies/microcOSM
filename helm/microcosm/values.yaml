@@ -151,7 +151,7 @@ planetDump:
     # In case cloudProvider: aws
     storageSize: 5Gi
   env:
-    CREATE_DUMP_SCHEDULE: '0/1 * * * *'
+    CREATE_DUMP_SCHEDULE: '0 0 * * *'
   resources:
     enabled: false
     requests:

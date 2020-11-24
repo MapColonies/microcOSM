@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-# import signal
 import sys
 import shutil
 from datetime import datetime
@@ -18,32 +17,38 @@ pg_db = os.environ['POSTGRES_DB']
 dump_cron_pattern = os.environ['CREATE_DUMP_SCHEDULE']
 dumps_storage_folder = os.environ.get('DUMP_STORAGE_FOLDER', '/mnt/dump')
 dump_file_prefix = os.environ.get('DUMP_FILE_PREFIX', 'dump')
+osmosis_omit_metadata = os.environ.get('OSMOSIS_OMIT_METADATA', 'true')
 
 
 def handle_osmosis_failure(exit_code):
     log.error('osmosis failed with exit code {}'.format(exit_code))
     sys.exit(1)
 
-def get_file_name():
+
+def get_dump_file_name():
     iso_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
     return '{0}-{1}.osm.pbf'.format(dump_file_prefix, iso_time)
-
+    
 
 def create_dump():
-    file_name = get_file_name()
-    create_dump_command = 'osmosis --read-apidb host={0} database={1} user={2} password={3} validateSchemaVersion=no --write-pbf file={4}'.format(pg_host, pg_db, pg_user, pg_password, file_name)
-    
+    file_name = get_dump_file_name()
+    create_dump_command = 'osmosis --read-apidb host={0} database={1} user={2} password={3} validateSchemaVersion=no omitmetadata={4} --write-pbf file={5}'.format(
+        pg_host, pg_db, pg_user, pg_password, osmosis_omit_metadata, file_name)
+
     log.info('creating dump')
     start_time = time.perf_counter()
 
-    run_command(create_dump_command, log.info, log.error, handle_osmosis_failure, lambda: None)
+    run_command(create_dump_command, process_log.info,
+                process_log.error, handle_osmosis_failure, lambda: None)
 
     end_time = time.perf_counter()
 
     run_time = end_time - start_time
-    log.info('dump {0} as been created succesfuly, it took {1:0.4f} seconds'.format(file_name, run_time))
+    log.info('dump {0} as been created succesfuly, it took {1:0.4f} seconds'.format(
+        file_name, run_time))
 
-    shutil.move('/app/{}'.format(file_name), os.path.join(dumps_storage_folder, file_name))
+    shutil.move(file_name, os.path.join(dumps_storage_folder, file_name))
+
 
 def main():
     iter = croniter(expr_format=dump_cron_pattern, start_time=datetime.now())
@@ -54,9 +59,12 @@ def main():
         pause.until(execute_time)
         create_dump()
 
+
 if __name__ == '__main__':
     os.makedirs('/var/log/osm-seed', exist_ok=True)
     log = JSONLogger(
-      'main-debug', additional_fields={'service': 'planet-dumper'})
-
+        'main-debug', additional_fields={'service': 'planet-dumper'})
+    process_log = JSONLogger(
+        'main-debug', additional_fields={'service': 'planet-dumper', 'description': 'osmosis logs'})
+    log.info('planet dump container started')
     main()
