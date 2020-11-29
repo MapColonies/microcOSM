@@ -46,6 +46,12 @@ images:
   nginx: nginx:1.19.2-alpine
 
 # ====================================================================================================
+# general images configuration
+# ====================================================================================================
+logging:
+  enabled: false
+
+# ====================================================================================================
 # Domain app configuration
 # ====================================================================================================
 domain:
@@ -502,3 +508,33 @@ replicationHttpServer:
     limits:
       memory: '2Gi'
       cpu: '2'
+
+filebeat:
+  filebeatConfig:
+    filebeat.yml: |
+      output.logstash:
+        host: '${NODE_NAME}'
+        hosts: '${LOGSTASH_HOSTS:logstash-logstash:5044}'
+
+      filebeat.autodiscover:
+        providers:
+          - type: kubernetes
+            templates:
+              - condition:
+                  regexp:
+                    kubernetes.container.name: "^microcosm-(earth-tiles-loader|imposm|mod-tile|osm2pgsql|planet-dump|replication-merger|tegola)*$"
+                config:
+                  - type: container
+                    json.keys_under_root: true
+                    json.add_error_key: false
+                    json.message_key: message
+                    paths:
+                      - /var/log/containers/*-${data.kubernetes.container.id}.log
+                    exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+                    processors:
+                      - drop_event:
+                          when:
+                            equals:
+                              message: ""
+                      - add_tags:
+                          tags: [lol]
