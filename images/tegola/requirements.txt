@@ -1,2 +1,2 @@
-mapcoloniesjsonlogger==0.0.14
+mapcoloniesjsonlogger==1.0.0
 osmeterium==0.0.1
