@@ -26,10 +26,11 @@ RUN mkdir -p "$IMPOSMDATA" && chmod 777 "$IMPOSMDATA"
 VOLUME /mnt/data
 
 WORKDIR /osm
-COPY ./config/${IMPOSM_MAPPING_FILE} ${IMPOSM_MAPPING_FILE}
-COPY ./config/postgis_helpers.sql postgis_helpers.sql
-COPY ./config/postgis_index.sql postgis_index.sql
-COPY ./config/first-osm-import.pbf .
+#COPY ./config/${IMPOSM_MAPPING_FILE} ${IMPOSM_MAPPING_FILE}
+#COPY ./config/postgis_helpers.sql postgis_helpers.sql
+#COPY ./config/postgis_index.sql postgis_index.sql
+#COPY ./config/first-osm-import.pbf .
+COPY ./config/* ./
 COPY start.py start.py
 RUN chmod a+x start.py
 CMD ./start.py
