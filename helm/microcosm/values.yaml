@@ -172,9 +172,8 @@ replicationJob:
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteMany
-    mountPath: /app/data
+    mountPath: /mnt/replications
     subPath: replication-dir/minute
-    # In case cloudProvider: aws
     storageSize: 5Gi
   resources:
     enabled: false
