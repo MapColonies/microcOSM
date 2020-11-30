@@ -39,10 +39,11 @@ def main():
     run_minute_replication()
 
 if __name__ == "__main__":
+    osmosis_name = 'osmosis'
     base_log_path = os.path.join('/var/log', app_name)
-    service_logs_path = '{0}/{1}.log'.format(base_log_path, app_name)
-    osmosis_logs_path = '{0}/{1}.log'.format(base_log_path, 'osmosis')
+    service_logs_path = os.path.join(base_log_path, app_name)
+    osmosis_logs_path = os.path.join(base_log_path, osmosis_name)
     os.makedirs(base_log_path, exist_ok=True)
     log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
-    process_log = generate_logger('osmosis', log_level='INFO', handlers=[{'type': 'rotating_file', 'path': osmosis_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(osmosis_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': osmosis_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
     main()
