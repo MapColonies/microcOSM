@@ -41,8 +41,8 @@ def main():
 if __name__ == "__main__":
     osmosis_name = 'osmosis'
     base_log_path = os.path.join('/var/log', app_name)
-    service_logs_path = os.path.join(base_log_path, app_name)
-    osmosis_logs_path = os.path.join(base_log_path, osmosis_name)
+    service_logs_path = os.path.join(base_log_path, app_name + '.log')
+    osmosis_logs_path = os.path.join(base_log_path, osmosis_name + '.log')
     os.makedirs(base_log_path, exist_ok=True)
     log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
     process_log = generate_logger(osmosis_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': osmosis_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
