@@ -33,7 +33,8 @@ done &
 # chown -R www-data:www-data /var/log/web
 
 # chmod -R 775 www-data:www-data /var/log/web
-
+chown -R www-data:www-data /var/log/web
+chmod -R 775 /var/log/web
 # Precompile again, to catch the env variables
 RAILS_ENV=production rake assets:precompile --trace
 

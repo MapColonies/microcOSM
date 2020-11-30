@@ -23,7 +23,7 @@ spec:
         run: {{ .Release.Name }}-web
     spec:
       containers:
-        - name: {{ .Chart.Name }}-web
+        - name: {{ .Chart.Name }}-web-app
           {{- if eq .Values.cloudProvider "aws" }} 
           image: "{{ .Values.web.image.aws }}"
           {{- end }}
@@ -91,4 +91,30 @@ spec:
             - name: SERVER_PROTOCOL
               value : http
               {{- end }}
+        {{- if .Values.logging.enabled }}
+          volumeMounts:
+          - name: apache-logs
+            mountPath: /var/log/apache2
+          - name: rails-logs
+            mountPath: /var/log/web
+        - name: {{ .Chart.Name }}-web-access-log
+          image: {{ .Values.images.busybox }}
+          args: [/bin/sh, -c, 'tail -n +1 -F /mnt/log/access.log']
+          volumeMounts:
+          - name: apache-logs
+            mountPath: /mnt/log
+        - name: {{ .Chart.Name }}-web-rails-log
+          image: {{ .Values.images.busybox }}
+          args: [/bin/sh, -c, 'tail -n +1 -F /mnt/log/rails-logstash.log']
+          volumeMounts:
+          - name: rails-logs
+            mountPath: /mnt/log
+      securityContext:
+        fsGroup: 4
+      volumes:
+      - name: apache-logs
+        emptyDir: {}
+      - name: rails-logs
+        emptyDir: {}
+        {{- end }}
 {{- end }}
