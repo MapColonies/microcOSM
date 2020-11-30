@@ -11,7 +11,7 @@ from os import environ
 from enum import Enum
 from datetime import datetime, timedelta, timezone
 from osmeterium.run_command import run_command
-from jsonlogger.logger import JSONLogger
+from MapColoniesJSONLogger.logger import generate_logger
 
 DATA_FOLDER = 'data'
 CONFIGURATION_FILE = 'configuration.txt'
@@ -32,6 +32,9 @@ MERGE_CONFIG_MAP = {
 }
 Time_Unit = Enum('Time_Unit', 'minute hour day week')
 log = None
+process_log = None
+app_name = 'replication-merger'
+osmosis_name = 'osmosis'
 
 TIME_UNIT_TO_MERGE = environ.get('TIME_UNIT_TO_MERGE')
 TIME_UNIT_BASED_ON = environ.get('TIME_UNIT_BASED_ON')
@@ -313,7 +316,7 @@ def get_last_state_timestamp(last_state_path, isHttp):
             last_state_content = read_file(last_state_path, True)
         return extract_value(content=last_state_content, key='timestamp', is_int_value=False, delimiter='=', throw_not_found=True)
     except:
-        log.error(f'could not determine the last state timestamp from the path: {time_unit_path}')
+        log.error(f'could not determine the last state timestamp from the path: {last_state_path}')
 
 def get_sleep_period(time_unit_path, interval, isHttp):
     """
@@ -338,7 +341,7 @@ def get_sleep_period(time_unit_path, interval, isHttp):
     except:
         log_and_exit('could not determine sleep period for the next job to accord')
 
-def scheduale_next_merge(time_unit):
+def schedule_next_merge(time_unit):
     sleep_period = get_sleep_period(time_unit.get_path(), time_unit.interval_length, False)
     log.info('finished merge job successfully, next merge job is scheduled in {:.2f} seconds'.format(sleep_period))
     pause.seconds(sleep_period)
@@ -350,15 +353,15 @@ def merge_job_loop(time_unit):
         log.info(f'state before merge job: { get_current_state_status(time_unit) }')
         log.info('running osmosis merge-replication-files command')
         run_command(f'{OSMOSIS_DIR} --merge-replication-files workingDirectory={time_unit.get_path()}',
-                    log.info,
-                    log.error,
+                    process_log.info,
+                    process_log.info,
                     handle_osmosis_exit_code,
-                    (lambda: log.info('Osmosis finished successfully.')))
+                    (lambda: log.info('{0} finished successfully.'.format(osmosis_name))))
         log.info(f'state after merge job: { get_current_state_status(time_unit) }')
-        scheduale_next_merge(time_unit)
+        schedule_next_merge(time_unit)
 
 def main():
-    log.info('replication-merger container started')
+    log.info('{0} container started'.format(app_name))
     try:
         time_unit = load_merge_configuration()
     except:
@@ -366,8 +369,10 @@ def main():
     merge_job_loop(time_unit)
 
 if __name__ == '__main__':
-    # create a dir for the default log file location
-    os.makedirs('/var/log/osm-seed', exist_ok=True)
-    # pass service/process name as a parameter to JSONLogger to be as an identifier for this specific logger instance
-    log = JSONLogger('main-debug', additional_fields={'service': 'replication-merger'})
+    base_log_path = os.path.join('/var/log', app_name)
+    service_logs_path = os.path.join(base_log_path, app_name + '.log')
+    osmosis_logs_path = os.path.join(base_log_path, osmosis_name + '.log')
+    os.makedirs(base_log_path, exist_ok=True)
+    log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(osmosis_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': osmosis_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
     main()
