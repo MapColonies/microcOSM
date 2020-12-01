@@ -30,14 +30,6 @@ spec:
           {{- if eq .Values.cloudProvider "minikube" }} 
           image: "{{ .Values.replicationJob.image.minikube }}"
           {{- end }}
-          command: ['./start.sh']
-          livenessProbe:
-            exec:
-              command:
-              - pgrep
-              - java
-            initialDelaySeconds: 5
-            periodSeconds: 15
           {{- if .Values.replicationJob.resources.enabled }}
           resources:
             requests:
@@ -66,20 +58,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-web-db-secret
                   key: username
-            - name: REPLICATION_FOLDER
-              value: /replication/minute
-            - name: CLOUDPROVIDER
-              value: 'minikube'
-            # In case cloudProvider=aws
-            #{{- if eq .Values.cloudProvider "aws" }}
-            #- name: AWS_S3_BUCKET
-            #  value: {{ .Values.AWS_S3_BUCKET }}
-            #{{- end }}
-              # Memory optimization for osmosis
-            {{- if .Values.replicationJob.resources.enabled }}
-            - name: MEMORY_JAVACMD_OPTIONS
-              value: {{ .Values.replicationJob.resources.requests.memory | default "2Gi" | quote}}
-            {{- end }}
+            - name: REPLICATION_DIRECTORY
+              value: {{ .Values.replicationJob.persistenceDisk.mountPath }}
       volumes:
         - name: replication-storage
         {{- if .Values.replicationJob.persistenceDisk.enabled }}
