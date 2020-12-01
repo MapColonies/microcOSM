@@ -100,8 +100,24 @@ spec:
           - mountPath: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
             name: expired-storage
             # subPath: {{ .Values.osm2pgsql.persistenceDisk.subPath }}
+        {{- if .Values.logging.enabled }}
+          - name: apache-logs
+            mountPath: /var/log/apache2
+        - name: {{ .Chart.Name }}-mod-tile-access-log
+          image: {{ .Values.images.busybox }}
+          args: [/bin/sh, -c, 'tail -n +1 -F /mnt/log/access.log']
+          volumeMounts:
+          - name: apache-logs
+            mountPath: /mnt/log
+        {{- end }}
       restartPolicy: Always
+      securityContext:
+        fsGroup: 4
       volumes:
+        {{- if .Values.logging.enabled }}
+        - name: apache-logs
+          emptyDir: {}
+        {{- end }}
         - name: mod-tile-tile-cache
         {{- if .Values.modTile.persistenceDisk.enabled }}
           persistentVolumeClaim:
