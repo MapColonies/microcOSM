@@ -356,12 +356,12 @@ def merge_job_loop(time_unit):
                     process_log.info,
                     process_log.info,
                     handle_osmosis_exit_code,
-                    (lambda: log.info('{0} finished successfully.'.format(osmosis_name))))
+                    (lambda: log.info(f'{osmosis_name} finished successfully')))
         log.info(f'state after merge job: { get_current_state_status(time_unit) }')
         schedule_next_merge(time_unit)
 
 def main():
-    log.info('{0} container started'.format(app_name))
+    log.info(f'{app_name} container started')
     try:
         time_unit = load_merge_configuration()
     except:
@@ -369,9 +369,10 @@ def main():
     merge_job_loop(time_unit)
 
 if __name__ == '__main__':
+    log_file_extention = '.log'
     base_log_path = os.path.join('/var/log', app_name)
-    service_logs_path = os.path.join(base_log_path, app_name + '.log')
-    osmosis_logs_path = os.path.join(base_log_path, osmosis_name + '.log')
+    service_logs_path = os.path.join(base_log_path, app_name + log_file_extention)
+    osmosis_logs_path = os.path.join(base_log_path, osmosis_name + log_file_extention)
     os.makedirs(base_log_path, exist_ok=True)
     log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
     process_log = generate_logger(osmosis_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': osmosis_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
