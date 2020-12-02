@@ -3,8 +3,9 @@ import re
 import subprocess
 import sys
 import time
-from os import path, linesep, environ, mkdir
-from jsonlogger.logger import JSONLogger
+from os import path, linesep, environ, mkdir, makedirs
+
+from MapColoniesJSONLogger.logger import generate_logger
 from osmeterium.run_command import run_command_async, run_command
 
 SEQUENCE_PATH_DENOMINATORS = [1000000, 1000, 1]
@@ -24,7 +25,9 @@ db_config = {
   'et_password':environ['EARTH_TILES_POSTGRES_PASSWORD'],
   'et_user':environ['EARTH_TILES_POSTGRES_USER']
 }
-
+app_name = 'mod-tile'
+log = None
+process_log = None
 
 def extract_positivie_integer_value(text, key):
     """
@@ -175,7 +178,7 @@ def render_expired(currently_expired_tiles_file_path):
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
     command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM}'
-    _ = run_command(command, process_log.debug, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    _ = run_command(command, process_log.debug, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
 
 
 def run_apache_service():
@@ -183,7 +186,7 @@ def run_apache_service():
     Start apache tile serving service
     """
     command = 'service apache2 start'
-    _ = run_command_async(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    _ = run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('apache2 service started')
 
 
@@ -192,7 +195,7 @@ def run_renderd_service():
     Start renderd service
     """
     command = 'renderd -f -c /usr/local/etc/renderd.conf'
-    _ = run_command_async(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    _ = run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('renderd service started')
 
 
@@ -208,7 +211,7 @@ def configure_carto_project():
       file.write(carto_data)
 
     command = 'carto {} > /src/openstreetmap-carto/mapnik.xml'.format(CARTO_FILE)
-    run_command(command, process_log.info, process_log.error, handle_command_graceful_exit, handle_command_successful_complete)
+    run_command(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
 
 def main():
     log.info('mod-tile container started')
@@ -233,10 +236,13 @@ def handle_command_successful_complete():
 
 
 if __name__ == '__main__':
-    # create a dir for the default log file location
-    mkdir('/var/log/osm-seed')
-    # pass service/process name as a parameter to JSONLogger to be as an identifier for this specific logger instance
-    log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile', 'description': 'main log'})
-    process_log = JSONLogger('main-debug', additional_fields={'service': 'mod-tile', 'description': 'process logs'})
+    log_file_extention = '.log'
+    mod_tile_name = 'mod-tile'
+    base_log_path = path.join('/var/log', app_name)
+    service_logs_path = path.join(base_log_path, app_name + log_file_extention)
+    mod_tile_log_path = path.join(base_log_path, mod_tile_name + log_file_extention)
+    makedirs(base_log_path, exist_ok=True)
+    log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(mod_tile_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': mod_tile_log_path}, { 'type': 'stream', 'output': 'stderr' }])
 
     main()
