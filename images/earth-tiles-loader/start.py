@@ -5,7 +5,8 @@ import sys
 from datetime import datetime
 from croniter import croniter
 import pause
-from jsonlogger.logger import JSONLogger
+
+from MapColoniesJSONLogger.logger import generate_logger
 from osmeterium.run_command import run_command
 
 pg_user = os.environ['POSTGRES_USER']
@@ -18,9 +19,9 @@ skip_load_on_startup = os.environ.get('SKIP_LOAD_ON_STARTUP', 'False')
 cron_expression = os.environ['LOAD_EXTERNAL_SCHEDULE_CRON']
 config_file = os.environ.get('CONFIG_FILE_PATH', default='external-data.yaml')
 
-log = JSONLogger(
-    'main-debug', additional_fields={'service': 'earth-tiles-loader'})
-
+log = None
+process_log = None
+app_name = 'earth-tiles-loader'
 
 def on_command_error(exit_code):
     log.error('get-external-data script failed with exit code {}'.format(exit_code))
@@ -31,7 +32,7 @@ def load_data():
     command = 'PGPASSWORD={0} get-external-data.py -H {1} -d {2} -p {3} -U {4} -c {5}'.format(
         pg_password, pg_host, pg_db, pg_port, pg_user, config_file)
     log.info('starting to load the data')
-    run_command(command, log.info, log.error, on_command_error, lambda: None)
+    run_command(command, log.info, log.info, on_command_error, lambda: None)
     log.info('loading completed')
 
 
@@ -50,4 +51,12 @@ def main():
 
 
 if __name__ == '__main__':
+    log_file_extention = '.log'
+    get_external_data = 'get_external_data'
+    base_log_path = os.path.join('/var/log', app_name)
+    service_logs_path = os.path.join(base_log_path, app_name + log_file_extention)
+    get_external_data_logs_path = os.path.join(base_log_path, get_external_data + log_file_extention)
+    os.makedirs(base_log_path, exist_ok=True)
+    log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(get_external_data, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': get_external_data_logs_path}, { 'type': 'stream', 'output': 'stderr' }])
     main()
