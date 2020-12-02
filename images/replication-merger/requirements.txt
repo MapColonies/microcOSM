@@ -1,4 +1,4 @@
-mapcoloniesjsonlogger==0.0.14
+mapcoloniesjsonlogger==1.0.0
 requests==2.24.0
 osmeterium==0.0.1
 pytz==2020.4
