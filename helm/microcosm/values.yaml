@@ -51,6 +51,12 @@ images:
 # ====================================================================================================
 logging:
   enabled: true
+  elasticConfig:
+    elasticHosts: elasticsearch-master:9200
+    kibanaHost: kibana-kibana:5601
+    logstashHost: logstash-logstash:5044
+    elasticUser: elastic
+    elasticPass: elastic
 
 # ====================================================================================================
 # Domain app configuration
@@ -493,20 +499,46 @@ replicationHttpServer:
       memory: '2Gi'
       cpu: '2'
 
-filebeat:
+filebeat-to-elastic:
+  extraEnvs:
+    - name: 'ELASTICSEARCH_USERNAME'
+      valueFrom:
+        secretKeyRef:
+          name: elastic-credentials
+          key: username
+    - name: 'ELASTICSEARCH_PASSWORD'
+      valueFrom:
+        secretKeyRef:
+          name: elastic-credentials
+          key: password
+    - name: 'ELASTICSEARCH_HOSTS'
+      valueFrom:
+        configMapKeyRef:
+          name: elastic-configmap
+          key: elastic_hosts
+    - name: 'KIBANA_HOST'
+      valueFrom:
+        configMapKeyRef:
+          name: elastic-configmap
+          key: kibana_host
   filebeatConfig:
     filebeat.yml: |
-      output.logstash:
+      setup.kibana:
+        host: '${KIBANA_HOST}'
+      output.elasticsearch:
         host: '${NODE_NAME}'
-        hosts: '${LOGSTASH_HOSTS:logstash-logstash:5044}'
+        hosts: '${ELASTICSEARCH_HOSTS:elasticsearch-master:9200}'
+        username: '${ELASTICSEARCH_USERNAME}'
+        password: '${ELASTICSEARCH_PASSWORD}'
 
       filebeat.autodiscover:
         providers:
           - type: kubernetes
+            include_labels: true
             templates:
               - condition:
                   regexp:
-                    kubernetes.container.name: "^microcosm-(earth-tiles-loader|imposm|mod-tile|osm2pgsql|planet-dump|replication-merger|tegola)*$"
+                    kubernetes.container.name: "^microcosm-(replication-job|tegola)*$"
                 config:
                   - type: container
                     json.keys_under_root: true
@@ -520,5 +552,58 @@ filebeat:
                           when:
                             equals:
                               message: ""
+
+filebeat-to-logstash:
+  extraEnvs:
+    - name: 'LOGSTASH_HOST'
+      valueFrom:
+        configMapKeyRef:
+          name: elastic-configmap
+          key: logstash_host
+    - name: 'KIBANA_HOST'
+      valueFrom:
+        configMapKeyRef:
+          name: elastic-configmap
+          key: kibana_host
+  filebeatConfig:
+    filebeat.yml: |
+      setup.kibana:
+        host: '${KIBANA_HOST}'
+      output.logstash:
+        host: '${NODE_NAME}'
+        hosts: '${LOGSTASH_HOST:logstash-logstash:5044}'
+
+      filebeat.autodiscover:
+        providers:
+          - type: kubernetes
+            templates:
+              - condition:
+                  regexp:
+                    kubernetes.container.name: "^microcosm-.*access-log$"
+                config:
+                  - type: container
+                    paths:
+                      - /var/log/containers/*-${data.kubernetes.container.id}.log
+                    exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+                    processors:
+                      - drop_event:
+                          when:
+                            equals:
+                              message: ""
                       - add_tags:
-                          tags: [lol]
+                          tags: [access_log]
+              - condition:
+                  regexp:
+                    kubernetes.container.name: "^microcosm-.*rails-log$"
+                config:
+                  - type: container
+                    paths:
+                      - /var/log/containers/*-${data.kubernetes.container.id}.log
+                    exclude_lines: ["^\\s+[\\-`('.|_]"]  # drop asciiart lines
+                    processors:
+                      - drop_event:
+                          when:
+                            equals:
+                              message: ""
+                      - add_tags:
+                          tags: [rails_app]

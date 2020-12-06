@@ -1,0 +1,10 @@
+{{- if .Values.logging.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elastic-configmap
+data:
+    elastic_hosts: {{ .Values.logging.elasticConfig.elasticHosts }}
+    kibana_host: {{ .Values.logging.elasticConfig.kibanaHost }}
+    logstash_host: {{ .Values.logging.elasticConfig.logstashHost }}
+{{- end }}
