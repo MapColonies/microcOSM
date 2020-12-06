@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
-import subprocess
 import sys
 import psycopg2
 import re
 import time
 import requests
-from jsonlogger.logger import JSONLogger
+
+from MapColoniesJSONLogger.logger import generate_logger
+from osmeterium.run_command import run_command_async, run_command
 
 # postgres variables
 PGHOST = os.environ['POSTGRES_HOST']
@@ -34,35 +35,23 @@ divide_for_days = 1000000
 divide_for_month = 1000
 divide_for_years = 1000
 
+osm2pgsql = 'osm2pgsql'
+app_name = '{0}_manager'.format(osm2pgsql)
+log = None
+process_log = None
 tiler_db_state_file_path = os.path.join(EXPIRED_DIRECTORY, 'state.txt')
 
-log = JSONLogger(
-    'main-debug', additional_fields={'service': 'osm2pgsql', 'description': 'main log'})
-process_log = JSONLogger('main-debug', config={'handlers': {
-    'file': {'filename': '/var/log/osm-seed/process.log'}}}, additional_fields={'service': 'osm2pgsql', 'description': 'process logs'})
 
+def handle_osm2pgsql_fail(exit_code):
+    log.error('command osm2pgsql failed with error code {0}'.format(exit_code))
+    sys.exit(exit_code)
 
-def get_command_stdout_iter(process):
-    for stdout_line in iter(process.stdout.readline, ''):
-        yield stdout_line
-
+def handle_osm2pgsql_success():
+    log.info('command osm2pgsql finished successfully')
 
 def run_osm2pgsql_command(*argv):
-    process = subprocess.Popen(' '.join(('osm2pgsql',) + argv),
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.STDOUT,
-                               universal_newlines=True,
-                               shell=True)
-    for stdout_line in get_command_stdout_iter(process):
-        if stdout_line:
-            process_log.info(stdout_line.strip())
-    process.stdout.close()
-    return_code = process.wait()
-
-    if (return_code != 0):
-        log.error(
-            'osm2pgsql command failed with error code {0}'.format(return_code))
-        sys.exit(1)
+    command_str = ' '.join(('osm2pgsql',) + argv)
+    run_command(command_str, process_log.info, process_log.info, handle_osm2pgsql_fail, handle_osm2pgsql_success)
 
 
 def db_init():
@@ -279,7 +268,6 @@ def update_data_loop():
 
 def main():
     log.info('osm2pgsql container started')
-    # if pg_is_ready():
     if not is_db_initialized():
         db_init()
         flag_db_as_initialized()
@@ -287,4 +275,12 @@ def main():
 
 
 if __name__ == '__main__':
+    log_file_extention = '.log'
+    base_log_path = os.path.join('/var/log', app_name)
+    service_logs_path = os.path.join(base_log_path, app_name + log_file_extention)
+    mod_tile_log_path = os.path.join(base_log_path, osm2pgsql + log_file_extention)
+    os.makedirs(base_log_path, exist_ok=True)
+    log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(osm2pgsql, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': mod_tile_log_path}, { 'type': 'stream', 'output': 'stderr' }])
+
     main()
