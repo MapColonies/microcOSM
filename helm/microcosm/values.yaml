@@ -537,8 +537,12 @@ filebeat-to-elastic:
             include_labels: true
             templates:
               - condition:
-                  regexp:
-                    kubernetes.container.name: "^microcosm-(replication-job|tegola)*$"
+                  and:
+                    - regexp:
+                        kubernetes.container.name: "^microcosm-(replication-job|tegola|earth-tiles-loader|mod-tile|osm2pgsql|planet-dump|replication-merger).*$"
+                    - not:
+                        contains:
+                          kubernetes.container.name: "log"
                 config:
                   - type: container
                     json.keys_under_root: true
@@ -588,8 +592,11 @@ filebeat-to-logstash:
                     processors:
                       - drop_event:
                           when:
-                            equals:
-                              message: ""
+                            or:
+                              - equals:
+                                message: ""
+                              - regexp:
+                                message: "^tails:.*$"
                       - add_tags:
                           tags: [access_log]
               - condition:
