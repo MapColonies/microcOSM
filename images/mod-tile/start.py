@@ -29,7 +29,9 @@ app_name = 'mod-tile'
 log = None
 process_log = None
 
-def extract_positivie_integer_value(text, key):
+# positive thinking
+# simplify function
+def extract_positive_integer_value(text, key):
     """
     Extract an integer value for a given key in a text
     Args:
@@ -141,12 +143,12 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
     while True:
         try:
             with open(state_file_path, 'r') as state_file:
-                end = extract_positivie_integer_value(state_file.read(), 'sequenceNumber')
+                end = extract_positive_integer_value(state_file.read(), 'sequenceNumber')
                 if not end:
                     raise LookupError(f'"sequenceNumber=" is not present in file')
             
             with open(rendered_state_file_path, 'r') as rendered_file:
-                start = extract_positivie_integer_value(rendered_file.read(), 'lastRendered')
+                start = extract_positive_integer_value(rendered_file.read(), 'lastRendered')
 
             log.info(f'rendering loop state', extra={'lastRendered': start, 'sequenceNumber': end})
         except FileNotFoundError as e:
@@ -178,15 +180,16 @@ def render_expired(currently_expired_tiles_file_path):
         currently_expired_tiles_file_path (str): path to a file with a list of expired tiles to be rendered
     """
     command = fr'cat {currently_expired_tiles_file_path} | /src/mod_tile/render_expired --map=osm --min-zoom={TILE_EXPIRE_MIN_ZOOM} --touch-from={TILE_EXPIRE_MIN_ZOOM}'
-    _ = run_command(command, process_log.debug, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
+    run_command(command, process_log.debug, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
 
 
 def run_apache_service():
     """
     Start apache tile serving service
     """
+    # run binary instead of service
     command = 'service apache2 start'
-    _ = run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
+    run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('apache2 service started')
 
 
@@ -195,7 +198,7 @@ def run_renderd_service():
     Start renderd service
     """
     command = 'renderd -f -c /usr/local/etc/renderd.conf'
-    _ = run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
+    run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('renderd service started')
 
 
