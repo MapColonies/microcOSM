@@ -29,6 +29,12 @@ app_name = 'mod-tile'
 log = None
 process_log = None
 
+def cast_string_to_int(value):
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
 # positive thinking
 # simplify function
 def extract_positive_integer_value(text, key):
@@ -47,14 +53,9 @@ def extract_positive_integer_value(text, key):
         return None
 
     value = found.group(0).split('=')[1]
-    try:
-        integer_value = int(value)
-        if integer_value < 0:
-            raise ValueError()
-    except ValueError:
-        raise ValueError(
-            f'"{key}=" must be followed by a positive integer in text')
-
+    integer_value = cast_string_to_int(value)
+    if (value is None or integer_value < 0):
+        raise ValueError('"{}=" must be followed by a positive integer in text'.format(key)) 
     return integer_value
 
 
@@ -97,8 +98,6 @@ def unique_tiles_from_files(start, end, directory):
         except FileNotFoundError:
             log.warn(
                 f'file {expired_tiles_file_path} not found for sequence number {i}')
-        except:
-            raise
         finally:
             i += 1
 
@@ -130,6 +129,31 @@ def update_rendered_state_file(rendered_state_file_path, sequence_number):
     with open(rendered_state_file_path, 'r+') as rendered_file:
         rendered_file.write(f'lastRendered={sequence_number}')
 
+def get_sequence_number_from_file(file_path, key):
+    try:
+        with open(file_path, 'r') as state_file:
+            return extract_positive_integer_value(state_file.read(), key)
+    except FileNotFoundError as e:
+        log.error(f'{e.strerror}: {e.filename}')
+        raise e
+
+def get_osm2pgsql_sequence_number(file_path):
+    sequence_number = get_sequence_number_from_file(file_path,'sequenceNumber')
+    if not sequence_number:
+        raise LookupError(f'"sequenceNumber=" is not present in file')
+    return sequence_number
+
+def get_rendered_sequence_number(file_path):
+    if not path.exists(file_path):
+        log.info('initializing rendering state file')
+        # with open(file_path, 'w') as rendered_file:
+        #     rendered_file.write('lastRendered=1')
+        rendered_file = open(file_path, 'w')
+        rendered_file.write('lastRendered=1')
+        rendered_file.close()
+        return 1
+    return get_sequence_number_from_file(file_path, 'lastRendered')
+
 
 def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_state_file_path):
     """
@@ -141,36 +165,19 @@ def expire_tiles(state_file_path, currently_expired_tiles_file_path, rendered_st
     """
     # Infinite loop that sleeps between tiles expirations
     while True:
-        try:
-            with open(state_file_path, 'r') as state_file:
-                end = extract_positive_integer_value(state_file.read(), 'sequenceNumber')
-                if not end:
-                    raise LookupError(f'"sequenceNumber=" is not present in file')
-            
-            with open(rendered_state_file_path, 'r') as rendered_file:
-                start = extract_positive_integer_value(rendered_file.read(), 'lastRendered')
-
-            log.info(f'rendering loop state', extra={'lastRendered': start, 'sequenceNumber': end})
-        except FileNotFoundError as e:
-            if e.filename == rendered_state_file_path:
-                log.info('initializing rendering state file')
-                start = 1
-                with open(rendered_state_file_path, 'w') as rendered_file:
-                    rendered_file.write('lastRendered=1')
+        start = get_rendered_sequence_number(rendered_state_file_path)
+        end = get_osm2pgsql_sequence_number(state_file_path)
+        if start <= end:
+            expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIRECTORY)
+            update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles)
+            if len(expired_tiles) > 0:
+                render_expired(currently_expired_tiles_file_path)
+                log.info('marked expired tiles for rerendering', extra={'mod_tile_sequence': start, 'osm2pgsql_sequence': end})
             else:
-                log.error(f'{e.strerror}: {e.filename}')
-        except:
-            raise
-        else:
-            if start <= end:
-                expired_tiles = unique_tiles_from_files(start, end, EXPIRED_DIRECTORY)
-                update_currently_expired_tiles_file(currently_expired_tiles_file_path, expired_tiles)
-                if len(expired_tiles) > 0:
-                    render_expired(currently_expired_tiles_file_path)
-                    log.info('marked expired tiles', extra={'lastRendered': start, 'sequenceNumber': end})
-                update_rendered_state_file(rendered_state_file_path, end)
-        finally:
-            time.sleep(RENDER_EXPIRED_TILES_INTERVAL)
+                log.info('no tiles were expired in this interval', extra={'mod_tile_sequence': start, 'osm2pgsql_sequence': end})
+            update_rendered_state_file(rendered_state_file_path, end)
+    
+        time.sleep(RENDER_EXPIRED_TILES_INTERVAL)
 
 
 def render_expired(currently_expired_tiles_file_path):
@@ -187,8 +194,7 @@ def run_apache_service():
     """
     Start apache tile serving service
     """
-    # run binary instead of service
-    command = 'service apache2 start'
+    command = 'apachectl -D FOREGROUND'
     run_command_async(command, process_log.info, process_log.info, handle_command_graceful_exit, handle_command_successful_complete)
     log.info('apache2 service started')
 
@@ -240,12 +246,12 @@ def handle_command_successful_complete():
 
 if __name__ == '__main__':
     log_file_extention = '.log'
-    mod_tile_name = 'mod-tile'
+    rendered_name = 'rendered'
     base_log_path = path.join('/var/log', app_name)
     service_logs_path = path.join(base_log_path, app_name + log_file_extention)
-    mod_tile_log_path = path.join(base_log_path, mod_tile_name + log_file_extention)
+    mod_tile_log_path = path.join(base_log_path, rendered_name + log_file_extention)
     makedirs(base_log_path, exist_ok=True)
     log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
-    process_log = generate_logger(mod_tile_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': mod_tile_log_path}, { 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(rendered_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': mod_tile_log_path}, { 'type': 'stream', 'output': 'stderr' }])
 
     main()
