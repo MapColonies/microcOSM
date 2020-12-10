@@ -35,8 +35,6 @@ def cast_string_to_int(value):
     except ValueError:
         return None
 
-# positive thinking
-# simplify function
 def extract_positive_integer_value(text, key):
     """
     Extract an integer value for a given key in a text
@@ -146,8 +144,6 @@ def get_osm2pgsql_sequence_number(file_path):
 def get_rendered_sequence_number(file_path):
     if not path.exists(file_path):
         log.info('initializing rendering state file')
-        # with open(file_path, 'w') as rendered_file:
-        #     rendered_file.write('lastRendered=1')
         rendered_file = open(file_path, 'w')
         rendered_file.write('lastRendered=1')
         rendered_file.close()
