@@ -144,9 +144,8 @@ def get_osm2pgsql_sequence_number(file_path):
 def get_rendered_sequence_number(file_path):
     if not path.exists(file_path):
         log.info('initializing rendering state file')
-        rendered_file = open(file_path, 'w')
-        rendered_file.write('lastRendered=1')
-        rendered_file.close()
+        with open(file_path, 'w') as rendered_file:
+            rendered_file.write('lastRendered=1')
         return 1
     return get_sequence_number_from_file(file_path, 'lastRendered')
 
@@ -245,9 +244,9 @@ if __name__ == '__main__':
     rendered_name = 'rendered'
     base_log_path = path.join('/var/log', app_name)
     service_logs_path = path.join(base_log_path, app_name + log_file_extention)
-    mod_tile_log_path = path.join(base_log_path, rendered_name + log_file_extention)
+    rendered_log_path = path.join(base_log_path, rendered_name + log_file_extention)
     makedirs(base_log_path, exist_ok=True)
     log = generate_logger(app_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': service_logs_path},{ 'type': 'stream', 'output': 'stderr' }])
-    process_log = generate_logger(rendered_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': mod_tile_log_path}, { 'type': 'stream', 'output': 'stderr' }])
+    process_log = generate_logger(rendered_name, log_level='INFO', handlers=[{'type': 'rotating_file', 'path': rendered_log_path}, { 'type': 'stream', 'output': 'stderr' }])
 
     main()
