@@ -16,5 +16,5 @@ make sure minikube is running before advancing.
 _`kubernetes` extension for vscode, and `minikube`, `kubectl` and `helm` extensions for zsh are recommended._
 
 * Install MicrocOSM on:
-  * [Aws](/microcOMS/InstallationGuide/aws/README.md)
-  * [Minikube](/microcOMS/InstallationGuide/minikube/README.md)
+  * [Aws](/microcOSM/InstallationGuide/aws/README.md)
+  * [Minikube](/microcOSM/InstallationGuide/minikube/README.md)
