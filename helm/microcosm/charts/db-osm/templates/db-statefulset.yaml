@@ -1,0 +1,106 @@
+{{- if .Values.webDb.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-web-db
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-db-statefulset
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+spec:
+  replicas: 1 # we only ever want one replica of the db
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-web-db
+      masterAppVersion: {{ quote .Values.microcosmVersion }}
+  serviceName: {{ .Release.Name }}-web-db
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-web-db
+        masterAppVersion: {{ quote .Values.microcosmVersion }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-web-db
+          {{- if eq .Values.cloudProvider "aws" }} 
+          image: "{{ .Values.webDb.image.aws }}:{{ .Values.webDb.image.tag }}"
+          {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: "{{ .Values.webDb.image.minikube }}:{{ .Values.webDb.image.tag }}"
+          {{- end }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+            - name: POSTGRES_HOST
+              value: {{ .Release.Name }}-web-db
+            - name: POSTGRES_DB
+              value: {{ .Values.webDb.env.POSTGRES_DB }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-db-secret
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-db-secret
+                  key: username
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-db-secret
+                  key: username
+            - name: PGDATA
+              value: {{ .Values.webDb.persistenceDisk.mountPath }}
+            - name: POD_IP
+              valueFrom: { fieldRef: { fieldPath: status.podIP } }
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - exec pg_isready --host $POD_IP
+            initialDelaySeconds: 120
+            timeoutSeconds: 5
+            failureThreshold: 6
+          startupProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - exec pg_isready --host $POD_IP
+            # Time for the DB to start - 18 * 10 = 180 seconds in total
+            failureThreshold: 18
+            periodSeconds: 10
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: {{ .Values.webDb.persistenceDisk.mountPath }}
+              subPath: {{ .Values.webDb.persistenceDisk.subPath }}
+          {{- if .Values.webDb.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ .Values.webDb.resources.requests.memory }}
+              cpu: {{ .Values.webDb.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.webDb.resources.limits.memory }}
+              cpu: {{ .Values.webDb.resources.limits.cpu }}
+          {{- end }}
+      volumes:
+        - name: postgres-storage
+        {{- if .Values.webDb.persistenceDisk.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-web-db-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+{{- end }}

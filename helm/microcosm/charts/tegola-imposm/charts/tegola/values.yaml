@@ -1,0 +1,93 @@
+# Default values for tegola.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# Master app version - empty var - inherited from parent values file
+microcosmVersion: ""
+
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+# ====================================================================================================
+# Variables for tegola
+# ====================================================================================================
+tegola:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tegola'
+    minikube: 'microcosm-tegola'
+    tag: "v1"
+  replicaCount: 1
+  service:
+    nodePort: 30101
+  env:
+    URI_PREFIX: mvt
+    TILER_SERVER_PORT: 80
+    TILER_CACHE_TYPE: file
+    TILER_CACHE_BASEPATH: /mnt/data
+    TILER_CACHE_MAX_ZOOM: 19
+    TILER_CACHE_MIN_ZOOM: 14
+    EXPIRE_TILES_DIR: /mnt/expiretiles
+    TILER_CACHE_UPDATE_INTERVAL: 60
+    # in case s3
+    # TILER_CACHE_BUCKET: microcosm-tiler
+    # TILER_CACHE_REGION: us-east-1
+    # TILER_CACHE_AWS_ACCESS_KEY_ID: xyz
+    # TILER_CACHE_AWS_SECRET_ACCESS_KEY: xyz/q
+  # In case you use TILER_CACHE_TYPE: file with  persistenceDisk
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteOnce
+    mountPath: /mnt/data
+    # In case cloudProvider: aws
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '1Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'
+
+# ====================================================================================================
+# MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
+# ====================================================================================================
+minikubeHostPath: ""

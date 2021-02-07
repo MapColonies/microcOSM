@@ -1,0 +1,64 @@
+{{- if .Values.earthTilesLoader.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-loader
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: earth-tiles-loader-deployment
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-earth-tiles-loader
+      masterAppVersion: {{ quote .Values.microcosmVersion }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-earth-tiles-loader
+        masterAppVersion: {{ quote .Values.microcosmVersion }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}-earth-tiles-loader
+          {{- if eq .Values.cloudProvider "aws" }} 
+          image: "{{ .Values.earthTilesLoader.image.aws }}"
+          {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: "{{ .Values.earthTilesLoader.image.minikube }}"
+          {{- end }}
+          {{- if .Values.earthTilesLoader.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ .Values.earthTilesLoader.resources.requests.memory }}
+              cpu: {{ .Values.earthTilesLoader.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.earthTilesLoader.resources.limits.memory }}
+              cpu: {{ .Values.earthTilesLoader.resources.limits.cpu }}
+          {{- end }}
+          env:
+            - name: LOAD_EXTERNAL_SCHEDULE_CRON
+              value: {{ .Values.earthTilesLoader.env.LOAD_EXTERNAL_SCHEDULE_CRON }}
+            - name: POSTGRES_HOST
+              value: {{ .Release.Name }}-earth-tiles-db # This should give us the host for DB on the cluster.
+            - name: POSTGRES_DB
+              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  key: username
+            - name: OGR_ENABLE_PARTIAL_REPROJECTION
+              value: 'true'
+{{- end }}

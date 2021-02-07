@@ -1,0 +1,79 @@
+{{- if .Values.osm2pgsql.enabled -}}
+{{- if .Values.osm2pgsql.persistenceDisk.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-osm2pgsql
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: osm2pgsql
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+spec:
+  selector:
+    matchLabels:
+      app:  {{ .Release.Name }}-osm2pgsql
+      masterAppVersion: {{ quote .Values.microcosmVersion }}
+  replicas: 1
+  serviceName: {{ .Release.Name }}-osm2pgsql
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-osm2pgsql
+        masterAppVersion: {{ quote .Values.microcosmVersion }}
+    spec:
+      containers:
+      - name: {{ .Release.Name }}-osm2pgsql
+        {{- if eq .Values.cloudProvider "aws" }} 
+        image: "{{ .Values.osm2pgsql.image.aws }}:{{.Values.osm2pgsql.image.tag }}"
+        {{- end }}
+        {{- if eq .Values.cloudProvider "minikube" }} 
+        image: "{{ .Values.osm2pgsql.image.minikube }}:{{.Values.osm2pgsql.image.tag }}"
+        {{- end }}
+        {{- if .Values.osm2pgsql.resources.enabled }}
+        resources:
+          requests:
+            memory: {{ .Values.osm2pgsql.resources.requests.memory }}
+            cpu: {{ .Values.osm2pgsql.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.osm2pgsql.resources.limits.memory }}
+            cpu: {{ .Values.osm2pgsql.resources.limits.cpu }}
+        {{- end }}
+        env:
+          - name: POSTGRES_HOST
+            value: {{ .Release.Name }}-rasterized-tiles-db
+          - name: POSTGRES_DB
+            value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-rasterized-tiles-db-secret
+                key: password
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-rasterized-tiles-db-secret
+                key: username
+          - name: POSTGRES_PORT
+            value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+          - name: OSM2PGSQL_UPDATE_INTERVAL
+            value: {{ quote .Values.osm2pgsql.env.UPDATE_INTERVAL }}
+          - name: EXPIRED_DIR
+            value: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
+          - name: REPLICATION_URL
+            value: http://{{ .Release.Name  }}-replication-http-server/minute
+        volumeMounts:
+        - mountPath: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
+          name: osm2pgsql-expired-storage
+      restartPolicy: Always
+      volumes:
+        - name: osm2pgsql-expired-storage
+        {{- if .Values.osm2pgsql.persistenceDisk.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-osm2pgsql-expired-pv-claim
+        {{- else }}
+          emptyDir: {}
+        {{- end }}
+{{- end }}
+{{- end }}

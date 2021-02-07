@@ -1,0 +1,89 @@
+# Default values for mod-tile.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+# Master app version - empty var - inherited from parent values file
+microcosmVersion: ""
+
+replicaCount: 1
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+# ====================================================================================================
+# Variables for mod-tile
+# ====================================================================================================
+modTile:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-mod-tile'
+    minikube: 'microcosm-mod-tile'
+    tag: "v1"
+  replicaCount: 1
+  service:
+    nodePort: 30102
+  env:
+    EXPIRED_DIRECTORY: /mnt/expired
+    TILE_EXPIRE_MIN_ZOOM: 14
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteOnce
+    mountPath: /var/lib/mod_tile
+    subPath: mod_tile_cache
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '1Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'
+# ====================================================================================================
+# MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
+# ====================================================================================================
+minikubeHostPath: ""

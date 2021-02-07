@@ -1,0 +1,21 @@
+{{- if .Values.vectorTilesDb.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-vector-tiles-db
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: vector-tiles-db-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}.
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-vector-tiles-db
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+{{- end }}

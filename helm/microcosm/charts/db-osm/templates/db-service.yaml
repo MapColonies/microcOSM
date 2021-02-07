@@ -1,0 +1,23 @@
+{{- if .Values.webDb.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web-db
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-db-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      # protocol: TCP
+      # name: http
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-web-db
+    masterAppVersion: {{ quote .Values.microcosmVersion }}
+{{- end }}
