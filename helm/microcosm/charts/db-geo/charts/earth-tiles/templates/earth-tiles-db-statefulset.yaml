@@ -29,10 +29,10 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-db
           {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.earthTilesDb.image.aws }}:{{ .Values.earthTilesDb.image.aws"
+          image: "{{ .Values.earthTilesDb.image.aws }}:{{ .Values.earthTilesDb.image.tag }}"
           {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.earthTilesDb.image.minikube }}"
+          image: "{{ .Values.earthTilesDb.image.minikube }}:{{ .Values.earthTilesDb.image.tag }}"
           {{- end }}
           ports:
             - name: postgres

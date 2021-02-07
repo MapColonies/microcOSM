@@ -7,7 +7,7 @@ metadata:
     app: {{ template "microcosm.name" . }}
     component: replication-job-service
     environment: {{ .Values.environment }}
-    release: {{ .Release.Name }
+    release: {{ .Release.Name }}
     masterAppVersion: {{ quote .Values.microcosmVersion }}
 spec:
   {{- if eq .Values.cloudProvider "minikube" }}

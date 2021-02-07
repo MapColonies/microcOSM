@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 # Master app version - empty var - inherited from parent values file
 microcosmVersion: ""
-
+cloudProvider: ""
 replicaCount: 1
 
 image:
@@ -36,7 +36,6 @@ service:
 ingress:
   enabled: false
   annotations: {}
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:

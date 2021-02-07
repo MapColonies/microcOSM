@@ -3,49 +3,12 @@
 # Declare variables to be passed into your templates.
 # Master app version - empty var - inherited from parent values file
 microcosmVersion: ""
-
+cloudProvider: ""
 replicaCount: 1
-
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The nam# ====================================================================================================
-# Variables for replication-job, Configured to create replication files of minute
-# ====================================================================================================
-replicationJob:
-  enabled: true
-  image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-job'
-    minikube: 'microcosm-replication-job:v1'
-  persistenceDisk:
-    enabled: true
-    accessMode: ReadWriteMany
-    mountPath: /mnt/replications
-    subPath: replication-dir/minute
-    storageSize: 5Gi
-  resources:
-    enabled: false
-    requests:
-      memory: '2Gi'
-      cpu: '1'
-    limits:
-      memory: '2Gi'
-      cpu: '2'
-e of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
 
 podAnnotations: {}
 
@@ -77,29 +40,33 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
 tolerations: []
 
+# ====================================================================================================
+# Variables for replication-job, Configured to create replication files of minute
+# ====================================================================================================
+replicationJob:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-job'
+    minikube: 'microcosm-replication-job:v1'
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    mountPath: /mnt/replications
+    subPath: replication-dir/minute
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '2Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'
 affinity: {}
 # ====================================================================================================
 # MINIKUBE: In case you are using the cloudProvider=minikube set the below variables

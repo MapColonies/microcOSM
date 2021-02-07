@@ -55,7 +55,7 @@ spec:
             - name: OSM_POSTGRES_HOST
               value: {{ .Release.Name }}-vector-tiles-db
             - name: OSM_POSTGRES_DB
-              value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+              value: {{ .Values.global.TILE_POSTGRES_DB }}
             - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -69,7 +69,7 @@ spec:
             - name: EARTH_TILES_POSTGRES_HOST
               value: {{ .Release.Name }}-earth-tiles-db
             - name: EARTH_TILES_POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              value: {{ .Values.global.EARTH_POSTGRES_DB }}
             - name: EARTH_TILES_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -81,7 +81,7 @@ spec:
                   name: {{ .Release.Name }}-earth-tiles-db-secret
                   key: username
             # - name: POSTGRES_PORT
-            #   value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
+            #   value: {{ .Values.global.POSTGRES_PORT | quote }}
               # tiler-server env variables
             - name: URI_PREFIX
               value: /{{ .Values.tegola.env.URI_PREFIX }}
@@ -120,7 +120,7 @@ spec:
           emptyDir: {}
         {{- end }}
         - name: expired-tiles
-        {{- if .Values.imposm.persistenceDisk.expired.enabled }}
+        {{- if .Values.global.persistenceDisk.expired.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-imposm-expired-pv-claim
         {{- else }}

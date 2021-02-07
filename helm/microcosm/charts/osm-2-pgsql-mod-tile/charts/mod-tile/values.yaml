@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 # Master app version - empty var - inherited from parent values file
 microcosmVersion: ""
-
+cloudProvider: ""
 replicaCount: 1
 
 imagePullSecrets: []

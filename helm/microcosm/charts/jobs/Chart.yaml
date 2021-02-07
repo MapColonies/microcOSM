@@ -22,3 +22,14 @@ version: 0.1.0
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
+dependencies:
+  - name: "misc"
+    version: 0.1.0
+  - name: "planet-dump"
+    version: 0.1.0
+  - name: "rep-job"
+    version: 0.1.0
+  - name: "rep-web"
+    version: 0.1.0
+  - name: "rep-merger"
+    version: 0.1.0

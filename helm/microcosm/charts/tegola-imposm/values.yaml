@@ -3,14 +3,8 @@
 # Declare variables to be passed into your templates.
 # Master app version - empty var - inherited from parent values file
 microcosmVersion: ""
-
+cloudProvider: ""
 replicaCount: 1
-
-image:
-  repository: nginx
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
 
 imagePullSecrets: []
 nameOverride: ""
@@ -79,3 +73,18 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+global:
+  persistenceDisk:
+    data:
+      enabled: true
+      accessMode: ReadWriteOnce
+      mountPath: /mnt/data/
+      subPath: imposm-data
+      storageSize: 5Gi
+    expired:
+      enabled: true
+      accessMode: ReadWriteMany
+      mountPath: /mnt/expired-tiles
+      subPath: imposm-expired
+      storageSize: 5Gi

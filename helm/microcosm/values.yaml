@@ -54,6 +54,14 @@ domain:
   # domainName, Add here your domain or the fixed IP  where the server is running
   domainName: '192.168.49.2'
   protocolo: http
+# ====================================================================================================
+# Global
+# ====================================================================================================
+global:
+  TILE_POSTGRES_DB: tiler-osm
+  EARTH_POSTGRES_DB: gis
+  POSTGRES_PORT: 5432
+
 
 
 
