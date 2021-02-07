@@ -18,10 +18,10 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
   {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
+  storageClassName: {{ .Values.global.efs.storageClass }}
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.osm2pgsql.persistenceDisk.subPath }}
+    volumeHandle: {{ .Values.global.efs.volumeHandle }}:{{ .Values.osm2pgsql.persistenceDisk.subPath }}
   {{- end }}
   # minikube provider
   {{- if eq .Values.cloudProvider "minikube" }}

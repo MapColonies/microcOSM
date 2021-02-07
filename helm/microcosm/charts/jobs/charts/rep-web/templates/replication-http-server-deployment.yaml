@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-replication-http-server
-          image: {{ .Values.images.nginx }}
+          image: {{ .Values.global.images.nginx }}
           livenessProbe:
             httpGet:
               path: /

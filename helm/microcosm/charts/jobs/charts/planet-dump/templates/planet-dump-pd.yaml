@@ -17,11 +17,11 @@ spec:
     - {{ .Values.planetDump.persistenceDisk.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
-  storageClassName: {{ .Values.efs.storageClass }} 
+  storageClassName: {{ .Values.global.efs.storageClass }}
   {{- if eq .Values.cloudProvider "aws" }}
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.planetDump.persistenceDisk.subPath }}
+    volumeHandle: {{ .Values.global.efs.volumeHandle }}:{{ .Values.planetDump.persistenceDisk.subPath }}
   {{- end }}
   # minikube provider
   {{- if eq .Values.cloudProvider "minikube" }}
@@ -42,7 +42,7 @@ metadata:
     masterAppVersion: {{ quote .Values.microcosmVersion }}
 spec:
   {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
+  storageClassName: {{ .Values.global.efs.storageClass }}
   {{- end }}
   {{- if eq .Values.cloudProvider "minikube" }}
   storageClassName: ''

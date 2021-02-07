@@ -46,13 +46,41 @@ nodeSelector: {}
 tolerations: []
 
 # ====================================================================================================
+# The Replication Http server, serves replication of minutes, and merged hours, days and weeks.
+# ====================================================================================================
+replicationHttpServer:
+  enabled: true
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    mountPath: /usr/share/nginx/html
+    subPath: replication-dir
+    # In case cloudProvider: aws
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '2Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'
+
+affinity: {}
+# ====================================================================================================
+# MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
+# ====================================================================================================
+minikubeHostPath: ""
+
+# ====================================================================================================
 # Variables for replication-job, Configured to create replication files of minute
 # ====================================================================================================
 replicationJob:
   enabled: true
   image:
     aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-job'
-    minikube: 'microcosm-replication-job:v1'
+    minikube: 'microcosm-replication-job'
+    tag: "v1"
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteMany
@@ -67,8 +95,3 @@ replicationJob:
     limits:
       memory: '2Gi'
       cpu: '2'
-affinity: {}
-# ====================================================================================================
-# MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
-# ====================================================================================================
-minikubeHostPath: ""

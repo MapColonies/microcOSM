@@ -83,3 +83,27 @@ affinity: {}
 # MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
 # ====================================================================================================
 minikubeHostPath: ""
+# ====================================================================================================
+# Variables for replication-merger, Configured to create the replication files by,hour, day or week
+# ====================================================================================================
+
+replicationMerger:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-merger'
+    minikube: 'microcosm-replication-merger'
+    tag: "v1"
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    mountPath: /mnt/data
+    subPath: replication-dir
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '2Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'

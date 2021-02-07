@@ -79,3 +79,14 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+global:
+  env:
+    UPDATE_INTERVAL: 60
+    REPLICATION_DIRECTORY: /mnt/replication
+    EXPIRED_DIRECTORY: /mnt/expired
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    subPath: osm2pgsql-expired
+    storageSize: 5Gi

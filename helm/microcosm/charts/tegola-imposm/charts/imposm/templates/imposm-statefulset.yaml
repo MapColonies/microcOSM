@@ -41,7 +41,7 @@ spec:
           - name: POSTGRES_HOST
             value: {{ .Release.Name }}-vector-tiles-db
           - name: POSTGRES_DB
-            value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+            value: {{ .Values.global.TILE_POSTGRES_DB }}
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
@@ -53,7 +53,7 @@ spec:
                 name: {{ .Release.Name }}-vector-tiles-db-secret
                 key: username
           - name: POSTGRES_PORT
-            value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
+            value: {{ .Values.global.POSTGRES_PORT | quote }}
           - name: CONFIG_REPLICATION_INTERVAL
             value: {{ .Values.imposm.env.CONFIG_REPLICATION_INTERVAL }}
           - name: IMPOSM_REPLICATION_URL

@@ -20,11 +20,11 @@ spec:
     - {{ $.Values.replicationMerger.persistenceDisk.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
-  storageClassName: {{ $.Values.efs.storageClass }} 
+  storageClassName: {{ $.Values.global.efs.storageClass }}
   {{- if eq $.Values.cloudProvider "aws" }}
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: {{ $.Values.efs.volumeHandle }}:{{ $.Values.replicationMerger.persistenceDisk.subPath }}/{{ .name }}
+    volumeHandle: {{ $.Values.global.efs.volumeHandle }}:{{ $.Values.replicationMerger.persistenceDisk.subPath }}/{{ .name }}
   {{- end }}
   # minikube provider
   {{- if eq $.Values.cloudProvider "minikube" }}

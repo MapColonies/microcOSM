@@ -83,3 +83,27 @@ affinity: {}
 # MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
 # ====================================================================================================
 minikubeHostPath: ""
+
+# ====================================================================================================
+# Variables for replication-job, Configured to create replication files of minute
+# ====================================================================================================
+replicationJob:
+  enabled: true
+  image:
+    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-job'
+    minikube: 'microcosm-replication-job'
+    tag: "v1"
+  persistenceDisk:
+    enabled: true
+    accessMode: ReadWriteMany
+    mountPath: /mnt/replications
+    subPath: replication-dir/minute
+    storageSize: 5Gi
+  resources:
+    enabled: false
+    requests:
+      memory: '2Gi'
+      cpu: '1'
+    limits:
+      memory: '2Gi'
+      cpu: '2'

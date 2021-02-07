@@ -63,25 +63,25 @@ spec:
             - name: OSM_POSTGRES_HOST
               value: {{ .Release.Name }}-rasterized-tiles-db
             - name: OSM_POSTGRES_DB
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+              value: {{ .Values.global.TILE_POSTGRES_DB }}
             - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: password  
             - name: OSM_POSTGRES_PORT
-              value: {{ quote .Values.rasterizedTilesDb.env.POSTGRES_PORT }}
+              value: {{ quote .Values.global.POSTGRES_PORT }}
             - name: OSM_POSTGRES_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: username       
             - name: OSM_POSTGRES_PORT
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+              value: {{ .Values.global.POSTGRES_PORT | quote }}
             - name: EARTH_TILES_POSTGRES_HOST
               value: {{ .Release.Name }}-earth-tiles-db
             - name: EARTH_TILES_POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              value: {{ .Values.global.EARTH_POSTGRES_DB }}
             - name: EARTH_TILES_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -95,14 +95,14 @@ spec:
             - name: EXPIRED_DIR
               value: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
             - name: RENDER_EXPIRED_TILES_INTERVAL
-              value: {{ quote .Values.osm2pgsql.env.UPDATE_INTERVAL }}
+              value: {{ quote .Values.global.env.UPDATE_INTERVAL }}
           volumeMounts:
           - mountPath: {{ .Values.modTile.persistenceDisk.mountPath }}
             name: mod-tile-tile-cache
             subPath: {{ .Values.modTile.persistenceDisk.subPath }}
           - mountPath: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
             name: expired-storage
-            # subPath: {{ .Values.osm2pgsql.persistenceDisk.subPath }}
+            # subPath: {{ .Values.global.persistenceDisk.subPath }}
       restartPolicy: Always
       volumes:
         - name: mod-tile-tile-cache
@@ -113,7 +113,7 @@ spec:
           emptyDir: {}
         {{- end }}
         - name: expired-storage
-        {{- if .Values.osm2pgsql.persistenceDisk.enabled }}
+        {{- if .Values.global.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-osm2pgsql-expired-pv-claim
         {{- else }}
