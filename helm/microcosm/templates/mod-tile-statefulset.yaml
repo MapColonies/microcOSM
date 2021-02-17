@@ -25,11 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-mod-tile
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.modTile.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.modTile.image.minikube }}"
+          image: {{ .Values.modTile.image.name }}:{{ .Values.modTile.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.modTile.image.name }}:{{ .Values.modTile.image.tag }}
           {{- end }}
           ports:
             - name: http

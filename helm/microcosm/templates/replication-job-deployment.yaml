@@ -24,11 +24,10 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-replication-job-deployment
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.replicationJob.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.replicationJob.image.minikube }}"
+          image: {{ .Values.replicationJob.image.name }}:{{ .Values.replicationJob.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.replicationJob.image.name }}:{{ .Values.replicationJob.image.tag }}
           {{- end }}
           {{- if .Values.replicationJob.resources.enabled }}
           resources:

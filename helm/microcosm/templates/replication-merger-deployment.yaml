@@ -27,11 +27,10 @@ spec:
     spec:
       containers:
         - name: {{ $releaseName }}-replication-merger-{{ .name }}-deployment
-          {{- if eq $.Values.cloudProvider "aws" }} 
-          image: "{{ $.Values.replicationMerger.image.aws }}"
-          {{- end }}
-          {{- if eq $.Values.cloudProvider "minikube" }} 
-          image: "{{ $.Values.replicationMerger.image.minikube }}"
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: {{ .Values.replicationMerger.image.name }}:{{ .Values.replicationMerger.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.replicationMerger.image.name }}:{{ .Values.replicationMerger.image.tag }}
           {{- end }}
           {{- if $.Values.replicationMerger.resources.enabled }}
           resources:

@@ -24,11 +24,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-loader
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.earthTilesLoader.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.earthTilesLoader.image.minikube }}"
+          image: {{ .Values.earthTilesLoader.image.name }}:{{ .Values.earthTilesLoader.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.earthTilesLoader.image.name }}:{{ .Values.earthTilesLoader.image.tag }}
           {{- end }}
           {{- if .Values.earthTilesLoader.resources.enabled }}
           resources:

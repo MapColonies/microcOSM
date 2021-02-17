@@ -13,11 +13,10 @@ spec:
       spec:
         containers:
         - name: {{ .Release.Name }}-populate-apidb-job
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.populateApidb.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.populateApidb.image.minikube }}"
+          image: {{ .Values.populateApidb.image.name }}:{{ .Values.populateApidb.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.populateApidb.image.name }}:{{ .Values.populateApidb.image.tag }}
           {{- end }}
           command: ['./start.sh']
           {{- if .Values.populateApidb.resources.enabled }}   

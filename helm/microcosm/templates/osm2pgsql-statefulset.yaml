@@ -22,12 +22,11 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-osm2pgsql
-        {{- if eq .Values.cloudProvider "aws" }} 
-        image: "{{ .Values.osm2pgsql.image.aws }}"
-        {{- end }}
-        {{- if eq .Values.cloudProvider "minikube" }} 
-        image: "{{ .Values.osm2pgsql.image.minikube }}"
-        {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: {{ .Values.osm2pgsql.image.name }}:{{ .Values.osm2pgsql.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.osm2pgsql.image.name }}:{{ .Values.osm2pgsql.image.tag }}
+          {{- end }}
         {{- if .Values.osm2pgsql.resources.enabled }}
         resources:
           requests:

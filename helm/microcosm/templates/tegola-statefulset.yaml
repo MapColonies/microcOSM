@@ -25,11 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-tegola
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.tegola.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.tegola.image.minikube }}"
+          image: {{ .Values.tegola.image.name }}:{{ .Values.tegola.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.tegola.image.name }}:{{ .Values.tegola.image.tag }}
           {{- end }}
           ports:
             - name: http
@@ -53,9 +52,15 @@ spec:
           env:
               # tiler-db env variables
             - name: OSM_POSTGRES_HOST
-              value: {{ .Release.Name }}-vector-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  key: host
             - name: OSM_POSTGRES_DB
-              value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  key: database
             - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

@@ -24,11 +24,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-web
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.web.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.web.image.minikube }}"
+          image: {{ .Values.web.image.name }}:{{ .Values.web.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.web.image.name }}:{{ .Values.web.image.tag }}
           {{- end }}
           ports:
             - name: http
@@ -53,9 +52,15 @@ spec:
             - name: GET_HOSTS_FROM
               value: dns
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-web-db # This should give us the host for DB on the cluster.
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.webDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

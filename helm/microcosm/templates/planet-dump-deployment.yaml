@@ -24,12 +24,11 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-planet-dump
-        {{- if eq .Values.cloudProvider "aws" }} 
-        image: "{{ .Values.planetDump.image.aws }}"
-        {{- end }}
-        {{- if eq .Values.cloudProvider "minikube" }} 
-        image: "{{ .Values.planetDump.image.minikube }}"
-        {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: {{ .Values.planetDump.image.name }}:{{ .Values.planetDump.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.planetDump.image.name }}:{{ .Values.planetDump.image.tag }}
+          {{- end }}
         {{- if .Values.planetDump.resources.enabled }}   
         resources:
           requests:
@@ -44,9 +43,15 @@ spec:
             mountPath: {{ .Values.planetDump.persistenceDisk.mountPath }}
         env:
           - name: POSTGRES_HOST
-            value: {{ .Release.Name }}-web-db
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-web-configmap
+                key: host
           - name: POSTGRES_DB
-            value: {{ .Values.webDb.env.POSTGRES_DB }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-web-configmap
+                key: database
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:

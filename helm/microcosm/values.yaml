@@ -6,7 +6,9 @@
 microcosmVersion: develop-9302179
 environment: development
 # cloudProvider is provider where you are going to deploy microcosm, it could be: aws, minikube
-cloudProvider: minikube
+cloudProvider: 
+  name: minikube
+  dockerUrl: 'xdxdxdxd'
 
 # ====================================================================================================
 # AWS: In case you are using the cloudProvider=aws set the below variables, We are assuming the nodes has a policies access to S3
@@ -67,13 +69,14 @@ domain:
 webDb:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-web-db:v1'
-    minikube: 'microcosm-web-db:v1'
+    name: 'microcosm-web-db'
+    tag: 'v1'
   auth:
     user: postgres
     password: '1234'
   env:
     POSTGRES_DB: openstreetmap
+    POSTGRES_HOST: '127.0.0.1'
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteOnce
@@ -95,8 +98,8 @@ webDb:
 web:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-openstreetmap-website:v1'
-    minikube: 'microcosm-openstreetmap-website:v1'
+    name: 'microcosm-openstreetmap-website'
+    tag: 'v1'
   replicaCount: 1
   oauth:
     key: 'aaaaaa'
@@ -121,7 +124,9 @@ web:
 # ====================================================================================================
 dbbackup:
   enabled: false
-  image: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:db-backup-restore'
+  image: 
+    name: 'db-backup-restore'
+    tag: 'v1'
   schedule: '0 */1 * * *'
   env:
     DB_ACTION: backup
@@ -141,8 +146,8 @@ dbbackup:
 planetDump:
   enabled: true
   image: 
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-planet-dump'
-    minikube: microcosm-planet-dump:v1
+    name: 'microcosm-planet-dump'
+    tag: v1
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteMany
@@ -167,8 +172,8 @@ planetDump:
 replicationJob:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-job'
-    minikube: 'microcosm-replication-job:v1'
+    name: 'microcosm-replication-job'
+    tag: 'v1'
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteMany
@@ -190,8 +195,8 @@ replicationJob:
 populateApidb:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:populate-apidbv2'
-    minikube: 'microcosm-populate-apidb:v1'
+    name: 'microcosm-populate-apidb'
+    tag: 'v1'
   env:
     URL_FILE_TO_IMPORT: 'https://download.geofabrik.de/europe/andorra-latest.osm.pbf'
   resources:
@@ -209,8 +214,8 @@ populateApidb:
 earthTilesDb:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tiles-db:v1'
-    minikube: 'microcosm-tiles-db:v1'
+    name: 'microcosm-tiles-db'
+    tag: 'v1'
   auth:
     user: postgres
     password: '1234'
@@ -237,8 +242,8 @@ earthTilesDb:
 earthTilesLoader:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-earth-tiles-loader:v1'
-    minikube: 'microcosm-earth-tiles-loader:v1'
+    name: 'microcosm-earth-tiles-loader'
+    tag: 'v1'
   env:
     LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
   resources:
@@ -256,8 +261,8 @@ earthTilesLoader:
 vectorTilesDb:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tiles-db'
-    minikube: 'microcosm-tiles-db:v1'
+    name: 'microcosm-tiles-db'
+    tag: 'v1'
   auth:
     user: postgres
     password: '1234'
@@ -288,8 +293,8 @@ vectorTilesDb:
 imposm:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-imposm:v1'
-    minikube: 'microcosm-imposm:v1'
+    name: 'microcosm-imposm'
+    tag: 'v1'
   env:
     CONFIG_EXPIRED_TILES_ZOOM: 14
     CONFIG_REPLICATION_INTERVAL: 1m
@@ -321,8 +326,8 @@ imposm:
 tegola:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tegola:v1'
-    minikube: 'microcosm-tegola:v1'
+    name: 'microcosm-tegola'
+    tag: 'v1'
   replicaCount: 1
   service:
     nodePort: 30101
@@ -362,8 +367,8 @@ tegola:
 osm2pgsql:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-osm2pgsql:v1'
-    minikube: 'microcosm-osm2pgsql:v1'
+    name: 'microcosm-osm2pgsql'
+    tag: 'v1'
   env:
     UPDATE_INTERVAL: 60
     REPLICATION_DIRECTORY: /mnt/replication
@@ -388,8 +393,8 @@ osm2pgsql:
 rasterizedTilesDb:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-tiles-db'
-    minikube: 'microcosm-tiles-db:v1'
+    name: 'microcosm-tiles-db'
+    tag: 'v1'
   auth:
     user: postgres
     password: '1234'
@@ -418,8 +423,8 @@ rasterizedTilesDb:
 modTile:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/microcosm-mod-tile:v1'
-    minikube: 'microcosm-mod-tile:v1'
+    name: 'microcosm-mod-tile'
+    tag: 'v1'
   replicaCount: 1
   service:
     nodePort: 30102
@@ -448,8 +453,8 @@ modTile:
 replicationMerger:
   enabled: true
   image:
-    aws: '645470188746.dkr.ecr.eu-west-1.amazonaws.com/libot:replication-merger'
-    minikube: 'microcosm-replication-merger:v1'
+    name: 'microcosm-replication-merger'
+    tag: 'v1'
   persistenceDisk:
     enabled: true
     accessMode: ReadWriteMany

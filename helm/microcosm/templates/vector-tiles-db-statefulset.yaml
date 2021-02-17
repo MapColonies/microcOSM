@@ -25,11 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-vector-tiles-db
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.vectorTilesDb.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.vectorTilesDb.image.minikube }}"
+          image: {{ .Values.vectorTilesDb.image.name }}:{{ .Values.vectorTilesDb.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.vectorTilesDb.image.name }}:{{ .Values.vectorTilesDb.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -39,9 +38,15 @@ spec:
             # - name: GET_HOSTS_FROM
             #   value: dns
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-vector-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

@@ -22,12 +22,11 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-imposm
-        {{- if eq .Values.cloudProvider "aws" }} 
-        image: "{{ .Values.imposm.image.aws }}"
-        {{- end }}
-        {{- if eq .Values.cloudProvider "minikube" }} 
-        image: "{{ .Values.imposm.image.minikube }}"
-        {{- end }}
+          {{- if eq .Values.cloudProvider "minikube" }} 
+          image: {{ .Values.imposm.image.name }}:{{ .Values.imposm.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.imposm.image.name }}:{{ .Values.imposm.image.tag }}
+          {{- end }}
         {{- if .Values.imposm.resources.enabled }}
         resources:
           requests:

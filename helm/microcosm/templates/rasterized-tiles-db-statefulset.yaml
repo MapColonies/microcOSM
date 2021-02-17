@@ -25,11 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-rasterized-tiles-db
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.rasterizedTilesDb.image.aws }}"
-          {{- end }}
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.rasterizedTilesDb.image.minikube }}"
+          image: {{ .Values.rasterizedTilesDb.image.name }}:{{ .Values.rasterizedTilesDb.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.rasterizedTilesDb.image.name }}:{{ .Values.rasterizedTilesDb.image.tag }}
           {{- end }}
           ports:
             - name: postgres
