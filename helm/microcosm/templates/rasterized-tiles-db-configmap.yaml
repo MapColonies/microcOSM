@@ -1,0 +1,18 @@
+{{- if or .Values.rasterizedTilesDb.enabled (or .Values.osm2pgsql.enabled .Values.modTile.enabled)  -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: vector-tiles-rasterized-tiles-db-configmap
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+data:
+  {{- if .Values.rasterizedTilesDb.enabled -}}
+  host: {{ .Release.Name }}-rasterized-tiles-db
+  {{- else -}}
+  host:  {{ .Values.rasterizedTilesDb.env.POSTGRES_HOST }}
+  {{- end -}}
+  database: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+{{- end }}

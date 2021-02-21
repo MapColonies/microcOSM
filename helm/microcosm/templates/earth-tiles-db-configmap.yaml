@@ -1,0 +1,18 @@
+{{- if or .Values.earthTilesDb.enabled (or .Values.imposm.enabled .Values.modTile.enabled)  -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-earth-tiles-db-configmap
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: vector-tiles-earth-tiles-db-configmap
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+data:
+  {{- if .Values.earthTilesDb.enabled -}}
+  host: {{ .Release.Name }}-earth-tiles-db
+  {{- else -}}
+  host:  {{ .Values.earthTilesDb.env.POSTGRES_HOST }}
+  {{- end -}}
+  database: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+{{- end }}

@@ -14,5 +14,5 @@ data:
   {{- else -}}
   host:  {{ .Values.webDb.env.POSTGRES_HOST }}
   {{- end -}}
-  database: {{ .Values.webDb.env.POSTGRES_HOST }}
+  database: {{ .Values.webDb.env.POSTGRES_DB }}
 {{- end }}

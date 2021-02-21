@@ -23,9 +23,9 @@ spec:
       containers:
       - name: {{ .Release.Name }}-imposm
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.imposm.image.name }}:{{ .Values.imposm.image.tag }}
+          image: {{ .Values.imposm.image.repository }}:{{ .Values.imposm.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.imposm.image.name }}:{{ .Values.imposm.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.imposm.image.repository }}:{{ .Values.imposm.image.tag }}
           {{- end }}
         {{- if .Values.imposm.resources.enabled }}
         resources:
@@ -37,10 +37,16 @@ spec:
             cpu: {{ .Values.imposm.resources.limits.cpu }}
         {{- end }}
         env:
-          - name: POSTGRES_HOST
-            value: {{ .Release.Name }}-vector-tiles-db
-          - name: POSTGRES_DB
-            value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+          - name: OSM_POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-db-configmap
+                key: host
+          - name: OSM_POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-db-configmap
+                key: database
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:

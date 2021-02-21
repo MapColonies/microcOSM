@@ -25,9 +25,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-loader
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.earthTilesLoader.image.name }}:{{ .Values.earthTilesLoader.image.tag }}
+          image: {{ .Values.earthTilesLoader.image.repository }}:{{ .Values.earthTilesLoader.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.earthTilesLoader.image.name }}:{{ .Values.earthTilesLoader.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.earthTilesLoader.image.repository }}:{{ .Values.earthTilesLoader.image.tag }}
           {{- end }}
           {{- if .Values.earthTilesLoader.resources.enabled }}
           resources:
@@ -42,9 +42,15 @@ spec:
             - name: LOAD_EXTERNAL_SCHEDULE_CRON
               value: {{ .Values.earthTilesLoader.env.LOAD_EXTERNAL_SCHEDULE_CRON }}
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-earth-tiles-db # This should give us the host for DB on the cluster.
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

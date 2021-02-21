@@ -23,9 +23,9 @@ spec:
       containers:
       - name: {{ .Release.Name }}-osm2pgsql
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.osm2pgsql.image.name }}:{{ .Values.osm2pgsql.image.tag }}
+          image: {{ .Values.osm2pgsql.image.repository }}:{{ .Values.osm2pgsql.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.osm2pgsql.image.name }}:{{ .Values.osm2pgsql.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.osm2pgsql.image.repository }}:{{ .Values.osm2pgsql.image.tag }}
           {{- end }}
         {{- if .Values.osm2pgsql.resources.enabled }}
         resources:
@@ -38,9 +38,15 @@ spec:
         {{- end }}
         env:
           - name: POSTGRES_HOST
-            value: {{ .Release.Name }}-rasterized-tiles-db
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+                key: host
           - name: POSTGRES_DB
-            value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+                key: database
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:

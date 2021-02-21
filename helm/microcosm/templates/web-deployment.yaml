@@ -25,9 +25,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-web
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.web.image.name }}:{{ .Values.web.image.tag }}
+          image: {{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.web.image.name }}:{{ .Values.web.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}
           {{- end }}
           ports:
             - name: http

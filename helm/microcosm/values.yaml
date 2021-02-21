@@ -8,7 +8,7 @@ environment: development
 # cloudProvider is provider where you are going to deploy microcosm, it could be: aws, minikube
 cloudProvider: 
   name: minikube
-  dockerUrl: 'xdxdxdxd'
+  dockerRegisteryUrl: 'xdxdxdxd'
 
 # ====================================================================================================
 # AWS: In case you are using the cloudProvider=aws set the below variables, We are assuming the nodes has a policies access to S3
@@ -69,7 +69,7 @@ domain:
 webDb:
   enabled: true
   image:
-    name: 'microcosm-web-db'
+    repository: 'microcosm-web-db'
     tag: 'v1'
   auth:
     user: postgres
@@ -98,7 +98,7 @@ webDb:
 web:
   enabled: true
   image:
-    name: 'microcosm-openstreetmap-website'
+    repository: 'microcosm-openstreetmap-website'
     tag: 'v1'
   replicaCount: 1
   oauth:
@@ -125,7 +125,7 @@ web:
 dbbackup:
   enabled: false
   image: 
-    name: 'db-backup-restore'
+    repository: 'db-backup-restore'
     tag: 'v1'
   schedule: '0 */1 * * *'
   env:
@@ -146,7 +146,7 @@ dbbackup:
 planetDump:
   enabled: true
   image: 
-    name: 'microcosm-planet-dump'
+    repository: 'microcosm-planet-dump'
     tag: v1
   persistenceDisk:
     enabled: true
@@ -172,7 +172,7 @@ planetDump:
 replicationJob:
   enabled: true
   image:
-    name: 'microcosm-replication-job'
+    repository: 'microcosm-replication-job'
     tag: 'v1'
   persistenceDisk:
     enabled: true
@@ -195,7 +195,7 @@ replicationJob:
 populateApidb:
   enabled: true
   image:
-    name: 'microcosm-populate-apidb'
+    repository: 'microcosm-populate-apidb'
     tag: 'v1'
   env:
     URL_FILE_TO_IMPORT: 'https://download.geofabrik.de/europe/andorra-latest.osm.pbf'
@@ -214,12 +214,13 @@ populateApidb:
 earthTilesDb:
   enabled: true
   image:
-    name: 'microcosm-tiles-db'
+    repository: 'microcosm-tiles-db'
     tag: 'v1'
   auth:
     user: postgres
     password: '1234'
   env:
+    POSTGRES_HOST: earth-tiles-db
     POSTGRES_DB: gis
   persistenceDisk:
     enabled: true
@@ -242,7 +243,7 @@ earthTilesDb:
 earthTilesLoader:
   enabled: true
   image:
-    name: 'microcosm-earth-tiles-loader'
+    repository: 'microcosm-earth-tiles-loader'
     tag: 'v1'
   env:
     LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
@@ -261,7 +262,7 @@ earthTilesLoader:
 vectorTilesDb:
   enabled: true
   image:
-    name: 'microcosm-tiles-db'
+    repository: 'microcosm-tiles-db'
     tag: 'v1'
   auth:
     user: postgres
@@ -293,7 +294,7 @@ vectorTilesDb:
 imposm:
   enabled: true
   image:
-    name: 'microcosm-imposm'
+    repository: 'microcosm-imposm'
     tag: 'v1'
   env:
     CONFIG_EXPIRED_TILES_ZOOM: 14
@@ -326,7 +327,7 @@ imposm:
 tegola:
   enabled: true
   image:
-    name: 'microcosm-tegola'
+    repository: 'microcosm-tegola'
     tag: 'v1'
   replicaCount: 1
   service:
@@ -367,7 +368,7 @@ tegola:
 osm2pgsql:
   enabled: true
   image:
-    name: 'microcosm-osm2pgsql'
+    repository: 'microcosm-osm2pgsql'
     tag: 'v1'
   env:
     UPDATE_INTERVAL: 60
@@ -393,7 +394,7 @@ osm2pgsql:
 rasterizedTilesDb:
   enabled: true
   image:
-    name: 'microcosm-tiles-db'
+    repository: 'microcosm-tiles-db'
     tag: 'v1'
   auth:
     user: postgres
@@ -423,7 +424,7 @@ rasterizedTilesDb:
 modTile:
   enabled: true
   image:
-    name: 'microcosm-mod-tile'
+    repository: 'microcosm-mod-tile'
     tag: 'v1'
   replicaCount: 1
   service:
@@ -453,7 +454,7 @@ modTile:
 replicationMerger:
   enabled: true
   image:
-    name: 'microcosm-replication-merger'
+    repository: 'microcosm-replication-merger'
     tag: 'v1'
   persistenceDisk:
     enabled: true

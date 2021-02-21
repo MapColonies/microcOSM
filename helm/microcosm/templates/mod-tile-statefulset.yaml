@@ -26,9 +26,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-mod-tile
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.modTile.image.name }}:{{ .Values.modTile.image.tag }}
+          image: {{ .Values.modTile.image.repository }}:{{ .Values.modTile.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.modTile.image.name }}:{{ .Values.modTile.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.modTile.image.repository }}:{{ .Values.modTile.image.tag }}
           {{- end }}
           ports:
             - name: http
@@ -57,9 +57,15 @@ spec:
           env:
               # tiler-db env variables
             - name: OSM_POSTGRES_HOST
-              value: {{ .Release.Name }}-rasterized-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+                  key: host
             - name: OSM_POSTGRES_DB
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+                  key: database
             - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -75,9 +81,15 @@ spec:
             - name: OSM_POSTGRES_PORT
               value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
             - name: EARTH_TILES_POSTGRES_HOST
-              value: {{ .Release.Name }}-earth-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: host
             - name: EARTH_TILES_POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: database
             - name: EARTH_TILES_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

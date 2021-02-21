@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-web-configmap
+  name: {{ .Release.Name }}-vector-tiles-db-configmap
   labels:
     app: {{ template "microcosm.name" . }}
     component: vector-tiles-db-configmap
@@ -14,5 +14,5 @@ data:
   {{- else -}}
   host:  {{ .Values.vectorTilesDb.env.POSTGRES_HOST }}
   {{- end -}}
-  database: {{ .Values.vectorTilesDb.env.POSTGRES_HOST }}
+  database: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
 {{- end }}

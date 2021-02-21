@@ -26,9 +26,9 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-db
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.earthTilesDb.image.name }}:{{ .Values.earthTilesDb.image.tag }}
+          image: {{ .Values.earthTilesDb.image.repository }}:{{ .Values.earthTilesDb.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.earthTilesDb.image.name }}:{{ .Values.earthTilesDb.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.earthTilesDb.image.repository }}:{{ .Values.earthTilesDb.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -38,9 +38,15 @@ spec:
             - name: GET_HOSTS_FROM
               value: dns
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-earth-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:

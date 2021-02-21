@@ -25,9 +25,9 @@ spec:
       containers:
       - name: {{ .Release.Name }}-planet-dump
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.planetDump.image.name }}:{{ .Values.planetDump.image.tag }}
+          image: {{ .Values.planetDump.image.repository }}:{{ .Values.planetDump.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.planetDump.image.name }}:{{ .Values.planetDump.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.planetDump.image.repository }}:{{ .Values.planetDump.image.tag }}
           {{- end }}
         {{- if .Values.planetDump.resources.enabled }}   
         resources:

@@ -25,9 +25,9 @@ spec:
       containers:
         - name: {{ .Release.Name }}-replication-job-deployment
           {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.replicationJob.image.name }}:{{ .Values.replicationJob.image.tag }}
+          image: {{ .Values.replicationJob.image.repository }}:{{ .Values.replicationJob.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerUrl }}/{{ .Values.replicationJob.image.name }}:{{ .Values.replicationJob.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.replicationJob.image.repository }}:{{ .Values.replicationJob.image.tag }}
           {{- end }}
           {{- if .Values.replicationJob.resources.enabled }}
           resources:
@@ -44,9 +44,15 @@ spec:
               # subPath: {{ .Values.replicationJob.persistenceDisk.subPath }}
           env:
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-web-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.webDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
