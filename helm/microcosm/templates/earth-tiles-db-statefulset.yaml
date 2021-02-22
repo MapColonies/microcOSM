@@ -1,4 +1,4 @@
-{{- if .Values.earthTilesDb.enabled -}}
+{{- if and .Values.earthTiles.enabled .Values.earthTiles.pods.db.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,10 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-db
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.earthTilesDb.image.repository }}:{{ .Values.earthTilesDb.image.tag }}
+          {{- if eq .Values.cloudProvider.name "minikube" }} 
+          image: {{ .Values.earthTiles.pods.db.image.repository }}:{{ .Values.earthTiles.pods.db.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.earthTilesDb.image.repository }}:{{ .Values.earthTilesDb.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.earthTiles.pods.db.image.repository }}:{{ .Values.earthTiles.pods.db.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -40,30 +40,30 @@ spec:
             - name: POSTGRES_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  name: {{ .Release.Name }}-earth-tiles-configmap
                   key: host
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-configmap
+                  name: {{ .Release.Name }}-earth-tiles-configmap
                   key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: password
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: username
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: username
             - name: PGDATA
-              value: {{ .Values.earthTilesDb.persistenceDisk.mountPath }}
+              value: {{ .Values.earthTiles.pods.db.persistenceDisk.mountPath }}
             - name: POD_IP
               valueFrom: { fieldRef: { fieldPath: status.podIP } }
           livenessProbe:
@@ -86,20 +86,20 @@ spec:
             periodSeconds: 5
           volumeMounts:
             - name: postgres-storage
-              mountPath: {{ .Values.earthTilesDb.persistenceDisk.mountPath }}
-              subPath: {{ .Values.earthTilesDb.persistenceDisk.subPath }}
-          {{- if .Values.earthTilesDb.resources.enabled }}
+              mountPath: {{ .Values.earthTiles.pods.db.persistenceDisk.mountPath }}
+              subPath: {{ .Values.earthTiles.pods.db.persistenceDisk.subPath }}
+          {{- if .Values.earthTiles.pods.db.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.earthTilesDb.resources.requests.memory }}
-              cpu: {{ .Values.earthTilesDb.resources.requests.cpu }}
+              memory: {{ .Values.earthTiles.pods.db.resources.requests.memory }}
+              cpu: {{ .Values.earthTiles.pods.db.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.earthTilesDb.resources.limits.memory }}
-              cpu: {{ .Values.earthTilesDb.resources.limits.cpu }}
+              memory: {{ .Values.earthTiles.pods.db.resources.limits.memory }}
+              cpu: {{ .Values.earthTiles.pods.db.resources.limits.cpu }}
           {{- end }}
       volumes:
         - name: postgres-storage
-        {{- if .Values.earthTilesDb.persistenceDisk.enabled }}
+        {{- if .Values.earthTiles.pods.db.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-earth-tiles-db-pv-claim
         {{- else }}

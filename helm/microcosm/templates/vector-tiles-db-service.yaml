@@ -1,4 +1,4 @@
-{{- if .Values.vectorTilesDb.enabled -}}
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.db.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:

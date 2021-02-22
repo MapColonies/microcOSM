@@ -1,4 +1,4 @@
-{{- if .Values.osm2pgsql.enabled -}}
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.osm2pgsql.enabled -}}
 ## WHY THIS EXISTS? ##
 apiVersion: v1
 kind: Service

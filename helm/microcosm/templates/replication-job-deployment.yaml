@@ -1,4 +1,4 @@
-{{- if .Values.replicationJob.enabled -}}
+{{- if  and .Values.ingestion.enabled .Values.ingestion.pods.replicationJob.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,24 +24,24 @@ spec:
     spec:
       containers:
         - name: {{ .Release.Name }}-replication-job-deployment
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.replicationJob.image.repository }}:{{ .Values.replicationJob.image.tag }}
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.ingestion.pods.replicationJob.image.repository }}:{{ .Values.ingestion.pods.replicationJob.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.replicationJob.image.repository }}:{{ .Values.replicationJob.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.replicationJob.image.repository }}:{{ .Values.ingestion.pods.replicationJob.image.tag }}
           {{- end }}
-          {{- if .Values.replicationJob.resources.enabled }}
+          {{- if .Values.ingestion.pods.replicationJob.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.replicationJob.resources.requests.memory }}
-              cpu: {{ .Values.replicationJob.resources.requests.cpu }}
+              memory: {{ .Values.ingestion.pods.replicationJob.resources.requests.memory }}
+              cpu: {{ .Values.ingestion.pods.replicationJob.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.replicationJob.resources.limits.memory }}
-              cpu: {{ .Values.replicationJob.resources.limits.cpu }}
+              memory: {{ .Values.ingestion.pods.replicationJob.resources.limits.memory }}
+              cpu: {{ .Values.ingestion.pods.replicationJob.resources.limits.cpu }}
           {{- end }}
           volumeMounts:
             - name: replication-storage
-              mountPath: {{ .Values.replicationJob.persistenceDisk.mountPath }}
-              # subPath: {{ .Values.replicationJob.persistenceDisk.subPath }}
+              mountPath: {{ .Values.ingestion.pods.replicationJob.persistenceDisk.mountPath }}
+              # subPath: {{ .Values.ingestion.pods.replicationJob.persistenceDisk.subPath }}
           env:
             - name: POSTGRES_HOST
               valueFrom:
@@ -64,10 +64,10 @@ spec:
                   name: {{ .Release.Name }}-web-db-secret
                   key: username
             - name: REPLICATION_DIRECTORY
-              value: {{ .Values.replicationJob.persistenceDisk.mountPath }}
+              value: {{ .Values.ingestion.pods.replicationJob.persistenceDisk.mountPath }}
       volumes:
         - name: replication-storage
-        {{- if .Values.replicationJob.persistenceDisk.enabled }}
+        {{- if .Values.ingestion.pods.replicationJob.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-replication-job-pv-claim
         {{- else }}

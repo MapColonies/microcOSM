@@ -1,4 +1,4 @@
-{{- if .Values.web.enabled -}}
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.web.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,7 +9,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.web.replicaCount }}
+  replicas: {{ .Values.ingestion.pods.web.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "microcosm.name" . }}
@@ -24,10 +24,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-web
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.ingestion.pods.web.image.repository }}:{{ .Values.ingestion.pods.web.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.web.image.repository }}:{{ .Values.ingestion.pods.web.image.tag }}
           {{- end }}
           ports:
             - name: http
@@ -39,14 +39,14 @@ spec:
               port: 80
             initialDelaySeconds: 600 # 10 min, because the compile process takes time.
             timeoutSeconds: 30
-          {{- if .Values.web.resources.enabled }}
+          {{- if .Values.ingestion.pods.web.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.web.resources.requests.memory }}
-              cpu: {{ .Values.web.resources.requests.cpu }}
+              memory: {{ .Values.ingestion.pods.web.resources.requests.memory }}
+              cpu: {{ .Values.ingestion.pods.web.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.web.resources.limits.memory }}
-              cpu: {{ .Values.web.resources.limits.cpu }}
+              memory: {{ .Values.ingestion.pods.web.resources.limits.memory }}
+              cpu: {{ .Values.ingestion.pods.web.resources.limits.cpu }}
           {{- end }}
           env:
             - name: GET_HOSTS_FROM
@@ -64,21 +64,21 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-web-db-secret
+                  name: {{ .Release.Name }}-web-secret
                   key: password
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-web-db-secret
+                  name: {{ .Release.Name }}-web-secret
                   key: username
             - name: MAILER_ADDRESS
-              value: {{ .Values.web.env.MAILER_ADDRESS }}
+              value: {{ .Values.ingestion.pods.web.env.MAILER_ADDRESS }}
             - name: MAILER_DOMAIN
-              value: {{ .Values.web.env.MAILER_DOMAIN }}
+              value: {{ .Values.ingestion.pods.web.env.MAILER_DOMAIN }}
             - name: MAILER_USERNAME
-              value: {{ .Values.web.env.MAILER_USERNAME }}
+              value: {{ .Values.ingestion.pods.web.env.MAILER_USERNAME }}
             - name: MAILER_PASSWORD
-              value: {{ quote .Values.web.env.MAILER_PASSWORD }}
+              value: {{ quote .Values.ingestion.pods.web.env.MAILER_PASSWORD }}
             # Set domain name or pod ip  
             - name: OAUTH_ID_KEY
               valueFrom:

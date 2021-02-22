@@ -1,4 +1,4 @@
-{{- if .Values.replicationHttpServer.enabled -}}
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.replicationHttpServer.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

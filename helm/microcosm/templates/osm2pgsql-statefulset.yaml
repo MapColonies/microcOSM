@@ -1,5 +1,5 @@
-{{- if .Values.osm2pgsql.enabled -}}
-{{- if .Values.osm2pgsql.persistenceDisk.enabled -}}
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.osm2pgsql.enabled -}}
+{{- if .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -22,19 +22,19 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-osm2pgsql
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.osm2pgsql.image.repository }}:{{ .Values.osm2pgsql.image.tag }}
-          {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.osm2pgsql.image.repository }}:{{ .Values.osm2pgsql.image.tag }}
-          {{- end }}
-        {{- if .Values.osm2pgsql.resources.enabled }}
+        {{- if eq .Values.cloudProvider.name  "minikube" }} 
+        image: {{ .Values.rasterizedTiles.pods.osm2pgsql.image.repository }}:{{ .Values.rasterizedTiles.pods.osm2pgsql.image.tag }}
+        {{- else }}
+        image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.rasterizedTiles.pods.osm2pgsql.image.repository }}:{{ .Values.rasterizedTiles.pods.osm2pgsql.image.tag }}
+        {{- end }}
+        {{- if .Values.rasterizedTiles.pods.osm2pgsql.resources.enabled }}
         resources:
           requests:
-            memory: {{ .Values.osm2pgsql.resources.requests.memory }}
-            cpu: {{ .Values.osm2pgsql.resources.requests.cpu }}
+            memory: {{ .Values.rasterizedTiles.pods.osm2pgsql.resources.requests.memory }}
+            cpu: {{ .Values.rasterizedTiles.pods.osm2pgsql.resources.requests.cpu }}
           limits:
-            memory: {{ .Values.osm2pgsql.resources.limits.memory }}
-            cpu: {{ .Values.osm2pgsql.resources.limits.cpu }}
+            memory: {{ .Values.rasterizedTiles.pods.osm2pgsql.resources.limits.memory }}
+            cpu: {{ .Values.rasterizedTiles.pods.osm2pgsql.resources.limits.cpu }}
         {{- end }}
         env:
           - name: POSTGRES_HOST
@@ -58,20 +58,20 @@ spec:
                 name: {{ .Release.Name }}-rasterized-tiles-db-secret
                 key: username
           - name: POSTGRES_PORT
-            value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+            value: {{ .Values.rasterizedTiles.dbConfig.port | default 5432 | quote }}
           - name: OSM2PGSQL_UPDATE_INTERVAL
-            value: {{ quote .Values.osm2pgsql.env.UPDATE_INTERVAL }}
+            value: {{ quote .Values.rasterizedTiles.pods.osm2pgsql.env.UPDATE_INTERVAL }}
           - name: EXPIRED_DIR
-            value: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
+            value: {{ .Values.rasterizedTiles.pods.osm2pgsql.env.EXPIRED_DIRECTORY }}
           - name: REPLICATION_URL
             value: http://{{ .Release.Name  }}-replication-http-server/minute
         volumeMounts:
-        - mountPath: {{ .Values.osm2pgsql.env.EXPIRED_DIRECTORY }}
+        - mountPath: {{ .Values.rasterizedTiles.pods.osm2pgsql.env.EXPIRED_DIRECTORY }}
           name: osm2pgsql-expired-storage
       restartPolicy: Always
       volumes:
         - name: osm2pgsql-expired-storage
-        {{- if .Values.osm2pgsql.persistenceDisk.enabled }}
+        {{- if .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-osm2pgsql-expired-pv-claim
         {{- else }}

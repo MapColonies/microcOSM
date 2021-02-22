@@ -1,34 +1,5 @@
-{{- if .Values.tegola.enabled -}}
-{{- if .Values.tegola.persistenceDisk.enabled -}}
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-tegola-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: tegola-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.tegola.persistenceDisk.storageSize }}
-  accessModes:
-    - {{ .Values.tegola.persistenceDisk.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}
-  {{- end }}
----
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.tegola.enabled -}}
+{{- if .Values.vectorTiles.pods.tegola.persistenceDisk.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -39,17 +10,18 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
   volumeName: {{ .Release.Name }}-tegola-pv
   accessModes:
-    - {{ .Values.tegola.persistenceDisk.accessMode }}
+    - {{ .Values.vectorTiles.pods.tegola.persistenceDisk.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.tegola.persistenceDisk.storageSize }}
+      storage: {{ .Values.vectorTiles.pods.tegola.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}

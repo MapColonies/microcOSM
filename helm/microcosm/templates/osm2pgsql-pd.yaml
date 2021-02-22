@@ -1,34 +1,5 @@
-{{- if .Values.osm2pgsql.enabled -}}
-{{- if .Values.osm2pgsql.persistenceDisk.enabled -}}
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-osm2pgsql-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: osm2pgsql-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.osm2pgsql.persistenceDisk.storageSize }}
-  accessModes:
-    - {{ .Values.osm2pgsql.persistenceDisk.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.osm2pgsql.persistenceDisk.subPath }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}/{{ .Values.osm2pgsql.persistenceDisk.subPath }}
-  {{- end }}
----
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.osm2pgsql.enabled -}}
+{{- if .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -39,18 +10,19 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
   volumeName: {{ .Release.Name }}-osm2pgsql-pv
   accessModes:
-    - {{ .Values.osm2pgsql.persistenceDisk.accessMode }}
+    - {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.accessMode }}
   resources:
     requests:
       # AWS Provider
-      storage: {{ .Values.osm2pgsql.persistenceDisk.storageSize }}
+      storage: {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}

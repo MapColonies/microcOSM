@@ -1,33 +1,5 @@
-{{- if .Values.modTile.enabled -}}
-{{- if .Values.modTile.persistenceDisk.enabled -}}
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-mod-tile-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: modTile-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.modTile.persistenceDisk.storageSize }}
-  accessModes:
-    - {{ .Values.modTile.persistenceDisk.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}
-  {{- end }}
----
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.modTile.enabled -}}
+{{- if .Values.rasterizedTiles.pods.modTile.persistenceDisk.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -38,17 +10,18 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
   volumeName: {{ .Release.Name }}-mod-tile-pv
   accessModes:
-    - {{ .Values.modTile.persistenceDisk.accessMode }}
+    - {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.modTile.persistenceDisk.storageSize }}
+      storage: {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}

@@ -1,35 +1,6 @@
-{{- if .Values.imposm.enabled -}}
-{{- if .Values.imposm.persistenceDisk.data.enabled -}}
-## DATA PV ##
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-imposm-data-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: imposm-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.imposm.persistenceDisk.data.storageSize }}
-  accessModes:
-    - {{ .Values.imposm.persistenceDisk.data.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.imposm.persistenceDisk.data.subPath }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}/{{ .Values.imposm.persistenceDisk.data.subPath }}
-  {{- end }}
----
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.imposm.enabled -}}
+{{- if .Values.vectorTiles.pods.imposm.persistenceDisk.data.enabled -}}
+## DATA PVC ##
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -40,51 +11,21 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
-  volumeName: {{ .Release.Name }}-imposm-data-pv
   accessModes:
-    - {{ .Values.imposm.persistenceDisk.data.accessMode }}
+    - {{ .Values.vectorTiles.pods.imposm.persistenceDisk.data.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.imposm.persistenceDisk.data.storageSize }}
+      storage: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.data.storageSize }}
 {{- end }}
 ---
-{{- if .Values.imposm.persistenceDisk.expired.enabled -}}
-## expired PV
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-imposm-expired-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: imposm-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.imposm.persistenceDisk.expired.storageSize }}
-  accessModes:
-    - {{ .Values.imposm.persistenceDisk.expired.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.imposm.persistenceDisk.expired.subPath }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}/{{ .Values.imposm.persistenceDisk.expired.subPath }}
-  {{- end }}
----
+{{- if .Values.vectorTiles.pods.imposm.persistenceDisk.expired.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -95,17 +36,17 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
-  volumeName: {{ .Release.Name }}-imposm-expired-pv
   accessModes:
-    - {{ .Values.imposm.persistenceDisk.expired.accessMode }}
+    - {{ .Values.vectorTiles.pods.imposm.persistenceDisk.expired.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.imposm.persistenceDisk.expired.storageSize }}
+      storage: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.expired.storageSize }}
 {{- end }}
 {{- end }}

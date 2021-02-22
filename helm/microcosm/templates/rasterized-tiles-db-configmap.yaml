@@ -1,18 +1,20 @@
-{{- if or .Values.rasterizedTilesDb.enabled (or .Values.osm2pgsql.enabled .Values.modTile.enabled)  -}}
+{{- if and .Values.global.deployConfig .Values.rasterizedTiles.enabled -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-rasterized-tiles-db-configmap
+  name: {{ .Release.Name }}-rasterized-tiles-configmap
+  annotations:
+    "helm.sh/resource-policy": keep
   labels:
     app: {{ template "microcosm.name" . }}
-    component: vector-tiles-rasterized-tiles-db-configmap
+    component: vector-tiles-rasterized-tiles-configmap
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 data:
-  {{- if .Values.rasterizedTilesDb.enabled -}}
-  host: {{ .Release.Name }}-rasterized-tiles-db
-  {{- else -}}
-  host:  {{ .Values.rasterizedTilesDb.env.POSTGRES_HOST }}
-  {{- end -}}
-  database: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+  {{- if .Values.rasterizedTiles.pods.db.enabled }}
+  host: {{ .Release.Name }}-rasterized-tiles
+  {{- else }}
+  host:  {{ .Values.rasterizedTiles.dbConfig.host }}
+  {{- end }}
+  database: {{ .Values.rasterizedTiles.dbConfig.db }}
 {{- end }}

@@ -1,4 +1,4 @@
-{{- if .Values.webDb.enabled -}}
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.webDb.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,10 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-web-db
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.webDb.image.repository }}:{{ .Values.webDb.image.tag }}
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.ingestion.pods.webDb.image.repository }}:{{ .Values.ingestion.pods.webDb.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.webDb.image.repository }}:{{ .Values.webDb.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.webDb.image.repository }}:{{ .Values.ingestion.pods.webDb.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -50,20 +50,20 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-web-db-secret
+                  name: {{ .Release.Name }}-web-secret
                   key: password
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-web-db-secret
+                  name: {{ .Release.Name }}-web-secret
                   key: username
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-web-db-secret
+                  name: {{ .Release.Name }}-web-secret
                   key: username
             - name: PGDATA
-              value: {{ .Values.webDb.persistenceDisk.mountPath }}
+              value: {{ .Values.ingestion.pods.webDb.persistenceDisk.mountPath }}
             - name: POD_IP
               valueFrom: { fieldRef: { fieldPath: status.podIP } }
           livenessProbe:
@@ -86,20 +86,20 @@ spec:
             periodSeconds: 5
           volumeMounts:
             - name: postgres-storage
-              mountPath: {{ .Values.webDb.persistenceDisk.mountPath }}
-              subPath: {{ .Values.webDb.persistenceDisk.subPath }}
-          {{- if .Values.webDb.resources.enabled }}
+              mountPath: {{ .Values.ingestion.pods.webDb.persistenceDisk.mountPath }}
+              subPath: {{ .Values.ingestion.pods.webDb.persistenceDisk.subPath }}
+          {{- if .Values.ingestion.pods.webDb.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.webDb.resources.requests.memory }}
-              cpu: {{ .Values.webDb.resources.requests.cpu }}
+              memory: {{ .Values.ingestion.pods.webDb.resources.requests.memory }}
+              cpu: {{ .Values.ingestion.pods.webDb.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.webDb.resources.limits.memory }}
-              cpu: {{ .Values.webDb.resources.limits.cpu }}
+              memory: {{ .Values.ingestion.pods.webDb.resources.limits.memory }}
+              cpu: {{ .Values.ingestion.pods.webDb.resources.limits.cpu }}
           {{- end }}
       volumes:
         - name: postgres-storage
-        {{- if .Values.webDb.persistenceDisk.enabled }}
+        {{- if .Values.ingestion.pods.webDb.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-web-db-pv-claim
         {{- else }}

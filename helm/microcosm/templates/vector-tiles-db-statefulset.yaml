@@ -1,4 +1,4 @@
-{{- if .Values.vectorTilesDb.enabled -}}
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.db.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,10 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-vector-tiles-db
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: {{ .Values.vectorTilesDb.image.repository }}:{{ .Values.vectorTilesDb.image.tag }}
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.vectorTiles.pods.db.image.repository }}:{{ .Values.vectorTiles.pods.db.image.tag }}
           {{- else }}
-          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.vectorTilesDb.image.repository }}:{{ .Values.vectorTilesDb.image.tag }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.vectorTiles.pods.db.image.repository }}:{{ .Values.vectorTiles.pods.db.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -40,30 +40,30 @@ spec:
             - name: POSTGRES_HOST
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  name: {{ .Release.Name }}-vector-tiles-configmap
                   key: host
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Release.Name }}-vector-tiles-db-configmap
+                  name: {{ .Release.Name }}-vector-tiles-configmap
                   key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-vector-tiles-db-secret
+                  name: {{ .Release.Name }}-vector-tiles-secret
                   key: password
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-vector-tiles-db-secret
+                  name: {{ .Release.Name }}-vector-tiles-secret
                   key: username
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-vector-tiles-db-secret
+                  name: {{ .Release.Name }}-vector-tiles-secret
                   key: username
             - name: PGDATA
-              value: {{ .Values.vectorTilesDb.persistenceDisk.mountPath }}
+              value: {{ .Values.vectorTiles.pods.db.persistenceDisk.mountPath }}
             - name: POD_IP
               valueFrom: { fieldRef: { fieldPath: status.podIP } }
           livenessProbe:
@@ -86,20 +86,20 @@ spec:
             periodSeconds: 5
           volumeMounts:
             - name: postgres-storage
-              mountPath: {{ .Values.vectorTilesDb.persistenceDisk.mountPath }}
-              subPath: {{ .Values.vectorTilesDb.persistenceDisk.subPath }}
-          {{- if .Values.vectorTilesDb.resources.enabled }}
+              mountPath: {{ .Values.vectorTiles.pods.db.persistenceDisk.mountPath }}
+              subPath: {{ .Values.vectorTiles.pods.db.persistenceDisk.subPath }}
+          {{- if .Values.vectorTiles.pods.db.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.vectorTilesDb.resources.requests.memory }}
-              cpu: {{ .Values.vectorTilesDb.resources.requests.cpu }}
+              memory: {{ .Values.vectorTiles.pods.db.resources.requests.memory }}
+              cpu: {{ .Values.vectorTiles.pods.db.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.vectorTilesDb.resources.limits.memory }}
-              cpu: {{ .Values.vectorTilesDb.resources.limits.cpu }}
+              memory: {{ .Values.vectorTiles.pods.db.resources.limits.memory }}
+              cpu: {{ .Values.vectorTiles.pods.db.resources.limits.cpu }}
           {{- end }}
       volumes:
         - name: postgres-storage
-        {{- if .Values.vectorTilesDb.persistenceDisk.enabled }}
+        {{- if .Values.vectorTiles.pods.db.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-vector-tiles-db-pv-claim
         {{- else }}

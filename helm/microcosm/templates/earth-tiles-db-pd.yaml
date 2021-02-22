@@ -1,34 +1,5 @@
-{{- if .Values.earthTilesDb.enabled -}}
-{{- if .Values.earthTilesDb.persistenceDisk.enabled -}}
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-earth-tiles-db-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: earth-tiles-db-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.earthTilesDb.persistenceDisk.storageSize }}
-  persistentVolumeReclaimPolicy: Retain
-  accessModes:
-    - {{ .Values.earthTilesDb.persistenceDisk.accessMode }}
-  # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}
-  {{- end }}
----
+{{- if and .Values.earthTiles.enabled .Values.earthTiles.pods.db.enabled -}}
+{{- if .Values.earthTiles.pods.db.persistenceDisk.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -39,17 +10,22 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider "minikube" }}
+  # {{- if eq .Values.cloudProvider.name  "aws" }}
+  # storageClassName: {{ .Values.efs.storageClass }}
+  # {{- end }}
+  # {{- if eq .Values.cloudProvider.name  "minikube" }}
+  # {{- end }}
+  {{- if .Values.global.existingPV }}
+  volumeName: {{ .Values.global.pvName }}
   storageClassName: ''
+  {{- else }}
+  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  storageClassName: {{ .Values.global.storageClass }}
   {{- end }}
-  volumeName: {{ .Release.Name }}-earth-tiles-db-pv
   accessModes:
-    - {{ .Values.earthTilesDb.persistenceDisk.accessMode }}
+    - {{ .Values.earthTiles.pods.db.persistenceDisk.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.earthTilesDb.persistenceDisk.storageSize }}
+      storage: {{ .Values.earthTiles.pods.db.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}
