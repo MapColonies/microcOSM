@@ -1,6 +1,35 @@
 {{- if and .Values.ingestion.enabled .Values.ingestion.pods.replicationHttpServer.enabled -}}
 {{- if .Values.ingestion.pods.replicationJob.persistenceDisk.enabled -}}
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-replication-http-server-pv
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: replicationHttpServer-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.storageSize }}
+  accessModes:
+    - {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.accessMode }}
+  persistentVolumeReclaimPolicy: Retain
+  # AWS Provider
+  storageClassName: {{ .Values.efs.storageClass }} 
+  {{- if eq .Values.cloudProvider "aws" }}
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.subPath }}
+  {{- end }}
+  # minikube provider
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ .Values.minikubeHostPath }}/{{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.subPath }}
+  {{- end }}
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-replication-http-server-pv-claim
@@ -10,18 +39,15 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if .Values.global.existingPV }}
-  volumeName: {{ .Values.global.pvName }}
-  storageClassName: ''
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }}
   {{- else }}
-  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
-  storageClassName: {{ .Values.global.storageClass }}
+  storageClassName: ''
   {{- end }}
   volumeName: {{ .Release.Name }}-replication-http-server-pv
   accessModes:
     - {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.storageSize }}
-{{- end }}
+      storage: {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.storageSize }}{{- end }}
 {{- end }}

@@ -1,6 +1,35 @@
 {{- if and .Values.ingestion.enabled .Values.ingestion.pods.webDb.enabled -}}
 {{- if .Values.ingestion.pods.webDb.persistenceDisk.enabled -}}
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-web-db-pv
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-db-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.ingestion.pods.webDb.persistenceDisk.storageSize }}
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - {{ .Values.ingestion.pods.webDb.persistenceDisk.accessMode }}
+  # AWS Provider
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }} 
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: {{ .Values.efs.volumeHandle }}
+  {{- end }}
+  # minikube provider
+  {{- if eq .Values.cloudProvider "minikube" }}
+  storageClassName: ""
+  hostPath:
+    path: {{ .Values.minikubeHostPath }}
+  {{- end }}
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-web-db-pv-claim
@@ -10,12 +39,10 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if .Values.global.existingPV }}
-  volumeName: {{ .Values.global.pvName }}
-  storageClassName: ''
+  {{- if eq .Values.cloudProvider "aws" }}
+  storageClassName: {{ .Values.efs.storageClass }}
   {{- else }}
-  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
-  storageClassName: {{ .Values.global.storageClass }}
+  storageClassName: ''
   {{- end }}
   volumeName: {{ .Release.Name }}-web-db-pv
   accessModes:

@@ -10,8 +10,10 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if .Values.global.existingPV }}
-  volumeName: {{ .Values.global.pvName }}
+{{- if .Values.global.existingPV }}
+  selector:
+    matchLabels:
+      app: microcosm
   storageClassName: ''
   {{- else }}
   # volumeName: {{ .Release.Name }}-earth-tiles-db-pv

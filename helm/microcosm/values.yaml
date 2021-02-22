@@ -92,7 +92,7 @@ ingestion:
         tag: 'v1'
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /var/lib/postgresql/data
         subPath: postgresql-db
         storageSize: 5Gi
@@ -277,7 +277,7 @@ earthTiles:
         tag: 'v1'
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /var/lib/postgresql/data
         subPath: external-data-db
         storageSize: 5Gi
@@ -328,7 +328,7 @@ vectorTiles:
         tag: 'v1'
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /var/lib/postgresql/data
         subPath: tegola-postgresql-db
         # In case cloudProvider: aws
@@ -357,7 +357,7 @@ vectorTiles:
       persistenceDisk:
         data:
           enabled: true
-          accessMode: ReadWriteOnce
+          accessMode: readWriteMany
           mountPath: /mnt/data/
           subPath: imposm-data
           storageSize: 5Gi
@@ -404,7 +404,7 @@ vectorTiles:
       # In case you use TILER_CACHE_TYPE: file with  persistenceDisk
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /mnt/data
         # In case cloudProvider: aws
         storageSize: 5Gi
@@ -437,7 +437,7 @@ rasterizedTiles:
         tag: 'v1'
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /var/lib/postgresql/data
         subPath: renderer-postgresql-db
         storageSize: 5Gi
@@ -493,7 +493,7 @@ rasterizedTiles:
         TILE_EXPIRE_MIN_ZOOM: 14
       persistenceDisk:
         enabled: true
-        accessMode: ReadWriteOnce
+        accessMode: readWriteMany
         mountPath: /var/lib/mod_tile
         subPath: mod_tile_cache
         storageSize: 5Gi
