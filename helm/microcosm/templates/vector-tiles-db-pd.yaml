@@ -17,13 +17,13 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
   storageClassName: {{ .Values.efs.storageClass }} 
-  {{- if eq .Values.cloudProvider "aws" }}
+  {{- if eq .Values.cloudProvider.name "aws" }}
   csi:
     driver: efs.csi.aws.com
     volumeHandle: {{ .Values.efs.volumeHandle }}
   {{- end }}
   # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if eq .Values.cloudProvider.name "minikube" }}
   storageClassName: ""
   hostPath:
     path: {{ .Values.minikubeHostPath }}
@@ -39,7 +39,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
+  {{- if eq .Values.cloudProvider.name "aws" }}
   storageClassName: {{ .Values.efs.storageClass }}
   {{- else }}
   storageClassName: ''

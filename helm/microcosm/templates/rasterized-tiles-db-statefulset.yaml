@@ -1,4 +1,4 @@
-{{- if .Values.rasterizedTiles.pods.db.enabled -}}
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.db.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

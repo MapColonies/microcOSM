@@ -16,14 +16,14 @@ spec:
     - {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.accessMode }}
   persistentVolumeReclaimPolicy: Retain
   # AWS Provider
-  {{- if eq .Values.cloudProvider "aws" }}
+  {{- if eq .Values.cloudProvider.name "aws" }}
   storageClassName: {{ .Values.efs.storageClass }} 
   csi:
     driver: efs.csi.aws.com
     volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.subPath }}
   {{- end }}
   # minikube provider
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if eq .Values.cloudProvider.name "minikube" }}
   storageClassName: ""
   hostPath:
     path: {{ .Values.minikubeHostPath }}/{{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.subPath }}
@@ -39,7 +39,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "aws" }}
+  {{- if eq .Values.cloudProvider.name "aws" }}
   storageClassName: {{ .Values.efs.storageClass }}
   {{- else }}
   storageClassName: ''
