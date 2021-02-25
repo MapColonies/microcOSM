@@ -28,16 +28,16 @@ spec:
   rules:
     - http:
         paths:
-          {{- if .Values.tegola.enabled }}
-          - path: /()({{ .Values.tegola.env.URI_PREFIX }}.*)
+          {{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.tegola.enabled }}
+          - path: /()({{ .Values.vectorTiles.pods.tegola.env.URI_PREFIX }}.*)
             pathType: Prefix
             backend:
               service:
                 name: {{ .Release.Name }}-tegola
                 port: 
-                  number: {{ .Values.tegola.env.TILER_SERVER_PORT }}
+                  number: {{ .Values.vectorTiles.pods.tegola.env.TILER_SERVER_PORT }}
           {{- end }}
-          {{- if .Values.modTile.enabled }}
+          {{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.modTile.enabled }}
           - path: /tiles(/|$)(.*)
             pathType: Prefix
             backend:
@@ -46,7 +46,7 @@ spec:
                 port: 
                   number: 80
           {{- end }}
-          {{- if .Values.web.enabled }}
+          {{- if and .Values.ingestion.enabled .Values.ingestion.pods.web.enabled }}
           # We need the empty capture group 
           - path: "/()(.*)"
             pathType: Prefix
