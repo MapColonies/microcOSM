@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y wget gnupg2 apt-transport-https ca-cert
 
 # Install the openstreetmap-website dependencies and passenger dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ruby2.7 libruby2.7 ruby2.7-dev \
-  libmagickwand-dev libxml2-dev libxslt1-dev \
+  libmagickwand-dev libxml2-dev libxslt1-dev libpqxx-dev\
   apache2 apache2-dev build-essential git-core \
   libsasl2-dev imagemagick libffi-dev curl libgd-dev libarchive-dev libbz2-dev libsasl2-dev
 RUN gem2.7 install bundler
@@ -41,22 +41,7 @@ RUN wget http://iweb.dl.sourceforge.net/project/pmt/pngcrush/1.8.12/pngcrush-1.8
   make && cp -f pngcrush /usr/local/bin
 RUN npm install -g svgo
 
-# Install openstreetmap-cgimap
-RUN apt-get install -y libxml2-dev libpqxx-dev libfcgi-dev \
-  libboost-dev libboost-regex-dev libboost-program-options-dev \
-  libboost-date-time-dev libboost-filesystem-dev \
-  libboost-system-dev libboost-locale-dev libmemcached-dev \
-  libcrypto++-dev automake autoconf libtool libyajl-dev zlib1g-dev
-ENV cgimap /tmp/openstreetmap-cgimap
-RUN git clone -b v0.8.3 https://github.com/zerebubuth/openstreetmap-cgimap.git $cgimap
-RUN cd $cgimap && \
-  ./autogen.sh && \
-  ./configure && \
-  make && \
-  make install
 
-# Daemontools provides the `fghack` program required for running the `cgimap`
-RUN apt-get install -y daemontools
 
 # Install the PGP key
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7
@@ -126,12 +111,12 @@ RUN a2ensite production
 RUN a2enmod proxy proxy_http rewrite
 
 # Config the virtual host apache2
-ADD config/cgimap.conf /tmp/
-RUN sed -e 's/RewriteRule ^(.*)/#RewriteRule ^(.*)/' \
-  -e 's/\/var\/www/\/var\/www\/public/g' \
-  /tmp/cgimap.conf > /etc/apache2/sites-available/cgimap.conf
-RUN chmod 644 /etc/apache2/sites-available/cgimap.conf
-RUN a2ensite cgimap
+# ADD config/cgimap.conf /tmp/
+# RUN sed -e 's/RewriteRule ^(.*)/#RewriteRule ^(.*)/' \
+#   -e 's/\/var\/www/\/var\/www\/public/g' \
+#   /tmp/cgimap.conf > /etc/apache2/sites-available/cgimap.conf
+# RUN chmod 644 /etc/apache2/sites-available/cgimap.conf
+# RUN a2ensite cgimap
 RUN apache2ctl configtest
 
 # permissions for logs folder
