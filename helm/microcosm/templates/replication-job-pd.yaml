@@ -1,35 +1,6 @@
 {{- if  and .Values.ingestion.enabled .Values.ingestion.pods.replicationJob.enabled -}}
 {{- if .Values.ingestion.pods.replicationJob.persistenceDisk.enabled -}}
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-replication-job-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: replicationJob-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.ingestion.pods.replicationJob.persistenceDisk.storageSize }}
-  accessModes:
-    - {{ .Values.ingestion.pods.replicationJob.persistenceDisk.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  storageClassName: {{ .Values.efs.storageClass }} 
-  {{- if eq .Values.cloudProvider.name "aws" }}
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}:{{ .Values.ingestion.pods.replicationJob.persistenceDisk.subPath }}
-  {{- end }}
-  # minikube provider
-  {{- if eq .Values.cloudProvider.name "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}/{{ .Values.ingestion.pods.replicationJob.persistenceDisk.subPath }}
-  {{- end }}
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-replication-job-pv-claim
@@ -39,11 +10,9 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider.name "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
   {{- else }}
-  storageClassName: ''
-  {{- end }}
   volumeName: {{ .Release.Name }}-replication-job-pv
   accessModes:
     - {{ .Values.ingestion.pods.replicationJob.persistenceDisk.accessMode }}

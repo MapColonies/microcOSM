@@ -1,34 +1,6 @@
 {{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.modTile.enabled -}}
 {{- if .Values.rasterizedTiles.pods.modTile.persistenceDisk.enabled -}}
 apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-mod-tile-pv
-  labels:
-    app: {{ template "microcosm.name" . }}
-    component: modTile-pd
-    environment: {{ .Values.environment }}
-    release: {{ .Release.Name }}
-spec:
-  capacity:
-    storage: {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.storageSize }}
-  accessModes:
-    - {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.accessMode }}
-  persistentVolumeReclaimPolicy: Retain
-  # AWS Provider
-  {{- if eq .Values.cloudProvider.name "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }} 
-  csi:
-    driver: efs.csi.aws.com
-    volumeHandle: {{ .Values.efs.volumeHandle }}
-  {{- end }}
-  {{- if eq .Values.cloudProvider.name "minikube" }}
-  storageClassName: ""
-  hostPath:
-    path: {{ .Values.minikubeHostPath }}
-  {{- end }}
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Name }}-mod-tile-pv-claim
@@ -38,12 +10,9 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider.name "aws" }}
-  storageClassName: {{ .Values.efs.storageClass }}
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
   {{- else }}
-  storageClassName: ''
-  {{- end }}
-  volumeName: {{ .Release.Name }}-mod-tile-pv
   accessModes:
     - {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.accessMode }}
   resources:

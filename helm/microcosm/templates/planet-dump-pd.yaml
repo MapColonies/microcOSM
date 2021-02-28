@@ -10,16 +10,9 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-{{- if .Values.global.existingPV }}
-  selector:
-    matchLabels:
-      app: microcosm
-  storageClassName: ''
-  {{- else }}
-  # volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- end }}
-  volumeName: {{ .Release.Name }}-planet-dump-pv
+  {{- else }}
   accessModes:
     - {{ .Values.ingestion.pods.planetDump.persistenceDisk.accessMode }}
   resources:
