@@ -12,8 +12,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
-  volumeName: {{ .Release.Name }}-replication-job-pv
+  {{- end }}
   accessModes:
     - {{ .Values.ingestion.pods.replicationJob.persistenceDisk.accessMode }}
   resources:

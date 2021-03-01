@@ -12,8 +12,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
-  volumeName: {{ .Release.Name }}-earth-tiles-db-pv
+  {{- end }}
   accessModes:
     - {{ .Values.earthTiles.pods.db.persistenceDisk.accessMode }}
   resources:

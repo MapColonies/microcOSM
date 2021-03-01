@@ -12,12 +12,11 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
-  volumeName: {{ .Release.Name }}-web-db-pv
+  {{- end }}
   accessModes:
     - {{ .Values.ingestion.pods.webDb.persistenceDisk.accessMode }}
   resources:
     requests:
-      storage: {{ .Values.ingestion.pods.webDb.persistenceDisk.storageSize }}
+     storage: {{ .Values.ingestion.pods.webDb.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}

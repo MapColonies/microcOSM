@@ -12,7 +12,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
+  {{- end }}
   accessModes:
     - {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.accessMode }}
   resources:

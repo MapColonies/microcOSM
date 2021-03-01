@@ -15,7 +15,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
+  {{- end }}
   accessModes:
     - {{ $.Values.ingestion.pods.replicationMerger.persistenceDisk.accessMode }}
   resources:

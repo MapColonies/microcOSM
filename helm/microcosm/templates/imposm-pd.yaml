@@ -12,8 +12,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
-  volumeName: {{ .Release.Name }}-imposm-data-pv
+  {{- end }}
   accessModes:
     - {{ .Values.vectorTiles.pods.imposm.persistenceDisk.data.accessMode }}
   resources:
@@ -34,8 +33,7 @@ metadata:
 spec:
   {{- if .Values.global.storageClass }}
   storageClassName: {{ .Values.global.storageClass }}
-  {{- else }}
-  volumeName: {{ .Release.Name }}-imposm-expired-pv
+  {{- end }}
   accessModes:
     - {{ .Values.vectorTiles.pods.imposm.persistenceDisk.expired.accessMode }}
   resources:
