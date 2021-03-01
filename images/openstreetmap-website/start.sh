@@ -11,6 +11,11 @@ production:
   password: ${POSTGRES_PASSWORD}
   encoding: utf8" > $workdir/config/database.yml
 
+sed -i -e "s/export APACHE_RUN_USER=www-data/export APACHE_RUN_USER=$(whoami)/g" /etc/apache2/envvars
+sed -i -e "s/export APACHE_RUN_GROUP=www-data/export APACHE_RUN_GROUP=root/g" /etc/apache2/envvars
+
+whoami
+
 sed -i -e 's/id_key: .*/id_key: "'$OAUTH_ID_KEY'"/g' $workdir/config/settings.yml
 
 # Setting up the SERVER_URL and SERVER_PROTOCOL
@@ -24,8 +29,9 @@ sed -i -e 's/https:\/\/{s}.tile.openstreetmap.org/http:\/\/'$MOD_TILE_HOST':'$MO
 # Setting up the email
 sed -i -e 's/microcosm-test@developmentseed.org/'$MAILER_USERNAME'/g' $workdir/config/settings.yml
 
+
 # Print the log while compiling the assets
-until $(curl -sf -o /dev/null $SERVER_URL); do
+until $(curl -sf -o /dev/null $SERVER_URL:8080); do
     echo "Waiting to start rails ports server..."
     sleep 2
 done &

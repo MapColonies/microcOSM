@@ -1,3 +1,22 @@
+FROM ubuntu:20.04 as builder
+WORKDIR /app
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential wget git-core libpng-dev libjpeg-dev
+RUN git clone -b 2.12.2 https://github.com/kornelski/pngquant.git && \
+  cd pngquant && \
+  ./configure && \
+  make && cd /app
+
+RUN git clone https://github.com/tjko/jpeginfo.git && \
+  cd jpeginfo && \
+  git checkout 743b1b15002f05298a0672e9d0f23ada240ababf && \
+  ./configure && \
+  make && cd /app
+
+RUN wget http://iweb.dl.sourceforge.net/project/pmt/pngcrush/1.8.12/pngcrush-1.8.12.tar.gz && \
+  tar zxf pngcrush-1.8.12.tar.gz && \
+  cd pngcrush-1.8.12 && \
+  make
+
 FROM ubuntu:20.04
 ENV workdir /var/www
 
@@ -6,49 +25,34 @@ ENV RAILS_ENV=production
 ENV EXECJS_RUNTIME=Node
 
 # installation dependencies
-RUN apt-get update && apt-get install -y wget gnupg2 apt-transport-https ca-certificates dirmngr
+RUN apt-get update && apt-get install -y gnupg2 apt-transport-https ca-certificates dirmngr
 
 # Install the openstreetmap-website dependencies and passenger dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y ruby2.7 libruby2.7 ruby2.7-dev \
   libmagickwand-dev libxml2-dev libxslt1-dev libpqxx-dev\
-  apache2 apache2-dev build-essential git-core \
+  apache2 apache2-dev git-core \
   libsasl2-dev imagemagick libffi-dev curl libgd-dev libarchive-dev libbz2-dev libsasl2-dev
 RUN gem2.7 install bundler
 
 # Install node for some images process dependencies
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash
-RUN apt-get install -y nodejs
-RUN ln -s "$(which node)" /usr/bin/nodejs
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash && \ 
+  apt-get install -y nodejs && \
+  ln -s "$(which node)" /usr/bin/nodejs
 
 
 # Fixing image_optim issues, installing a bush of libraries from : https://github.com/toy/image_optim#pngout-installation-optional
 RUN apt-get install -y advancecomp gifsicle jhead jpegoptim optipng
-RUN git clone -b 2.12.2 https://github.com/kornelski/pngquant.git && \
-  cd pngquant && \
-  ./configure && \
-  make && \
-  make install
-RUN git clone https://github.com/tjko/jpeginfo.git && \
-  cd jpeginfo && \
-  git checkout 743b1b15002f05298a0672e9d0f23ada240ababf && \
-  ./configure && \
-  make && \
-  make strip && \
-  make install
-RUN wget http://iweb.dl.sourceforge.net/project/pmt/pngcrush/1.8.12/pngcrush-1.8.12.tar.gz && \
-  tar zxf pngcrush-1.8.12.tar.gz && \
-  cd pngcrush-1.8.12 && \
-  make && cp -f pngcrush /usr/local/bin
 RUN npm install -g svgo
 
+COPY --from=builder ./app/pngcrush-1.8.12/pngcrush ./app/jpeginfo/jpeginfo ./app/pngquant/pngquant /usr/local/bin/ 
 
 
 # Install the PGP key
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7
 
 # Add the APT repository
-RUN sh -c 'echo deb https://oss-binaries.phusionpassenger.com/apt/passenger focal main > /etc/apt/sources.list.d/passenger.list'
-RUN apt-get update
+RUN sh -c 'echo deb https://oss-binaries.phusionpassenger.com/apt/passenger focal main > /etc/apt/sources.list.d/passenger.list' && \
+   apt-get update
 
 # Install Passenger + Apache module
 RUN apt-get install -y libapache2-mod-passenger
@@ -59,8 +63,7 @@ RUN a2enmod passenger
 RUN apache2ctl restart
 
 # Check installation
-RUN /usr/bin/passenger-config validate-install
-RUN /usr/sbin/passenger-memory-stats
+RUN /usr/bin/passenger-config validate-install && /usr/sbin/passenger-memory-stats
 
 # Clone the openstreetmap-website
 RUN rm -rf $workdir && git clone https://github.com/openstreetmap/openstreetmap-website.git $workdir 
@@ -99,33 +102,29 @@ ADD config/action_mailer.rb config/initializers/action_mailer.rb
 
 # Precompile the website assets
 RUN rake i18n:js:export assets:precompile
-# The rack interface requires a `tmp` directory to use openstreetmap-cgimap
-RUN ln -s /tmp /var/www/tmp
-
 # Add Apache configuration file
 ADD config/production.conf /etc/apache2/sites-available/production.conf
-RUN a2dissite 000-default
-RUN a2ensite production
-
+RUN a2dissite 000-default &&  \
+    a2ensite production  && \
 # Enable required apache modules for the cgimap Apache service
-RUN a2enmod proxy proxy_http rewrite
+  a2enmod proxy proxy_http rewrite && \
+  apache2ctl configtest
 
-# Config the virtual host apache2
-# ADD config/cgimap.conf /tmp/
-# RUN sed -e 's/RewriteRule ^(.*)/#RewriteRule ^(.*)/' \
-#   -e 's/\/var\/www/\/var\/www\/public/g' \
-#   /tmp/cgimap.conf > /etc/apache2/sites-available/cgimap.conf
-# RUN chmod 644 /etc/apache2/sites-available/cgimap.conf
-# RUN a2ensite cgimap
-RUN apache2ctl configtest
+RUN sed -i -e 's/80/8080/g' /etc/apache2/ports.conf 
 
-# permissions for logs folder
-RUN chown -R www-data:www-data /var/log/web && chmod -R 775 /var/log/web
-
-# Set Permissions for www-data
-RUN chown -R www-data: /var/www
-
-# Script to start the app
 ADD start.sh $workdir/start.sh
+# permissions for logs folder
+# RUN chown -R www-data:www-data /var/log/web &&  \
+# chmod -R 775 /var/log/web && \
+#  chown -R www-data: /var/www && chmod -R 775 /var/www && \
+#   chown -R www-data: /var/log/apache2 && \
+#   chown -R www-data: /var/run/apache2
+  # chown -R www-data: /etc/apache2/sites-available
+# Script to start the app
+
+RUN chgrp -R 0 /var/www && \
+    chmod -R g=u /var/www && \ 
+    chgrp -R 0 /var/log/web && \
+    chmod -R g=u /var/log/web
 
 CMD $workdir/start.sh
