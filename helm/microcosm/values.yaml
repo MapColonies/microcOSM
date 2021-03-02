@@ -105,6 +105,9 @@ ingestion:
       image:
         repository: 'microcosm-openstreetmap-website'
         tag: 'v1'
+      route:
+        enabled: true
+        path: /
       replicaCount: 1
       oauth:
         key: 'aaaaaa'

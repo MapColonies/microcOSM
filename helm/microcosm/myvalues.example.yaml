@@ -14,36 +14,13 @@ global:
   deployConfig: true
   storageClass: 'whatever'
 
-# ====================================================================================================
-# AWS: In case you are using the cloudProvider=aws set the below variables, We are assuming the nodes has a policies access to S3
-# ====================================================================================================
-AWS_S3_BUCKET: s3://microcosm
-
-
-# ====================================================================================================
-# MINIKUBE: In case you are using the cloudProvider=minikube set the below variables
-# ====================================================================================================
-minikubeHostPath: /data
 
 # ====================================================================================================
 # Ingress variables
 # ====================================================================================================
 ingress:
   enabled: false
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts:
-    - chart-example.local
-  tls: []
 
-# ====================================================================================================
-# general images configuration
-# ====================================================================================================
-images:
-  nginx: nginx:1.19.2-alpine
 
 # ====================================================================================================
 # Domain app configuration
@@ -82,20 +59,6 @@ ingestion:
       image:
         repository: 'microcosm-web-db'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /var/lib/postgresql/data
-        subPath: postgresql-db
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '1'
 
     # ====================================================================================================
     # Variables for microcosm website
@@ -105,24 +68,12 @@ ingestion:
       image:
         repository: 'microcosm-openstreetmap-website'
         tag: 'v1'
+      route:
+        enabled: true
+        path: /
       replicaCount: 1
       oauth:
         key: 'aaaaaa'
-      service:
-        nodePort: 30100
-      env:
-        MAILER_ADDRESS: smtp.gmail.com
-        MAILER_DOMAIN: gmail.com
-        MAILER_USERNAME: microcosm.test@gmail.com
-        MAILER_PASSWORD: '1234'
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
 
     # ====================================================================================================
@@ -133,23 +84,8 @@ ingestion:
       image: 
         repository: 'microcosm-planet-dump'
         tag: v1
-      persistenceDisk:
-        enabled: true
-        accessMode: ReadWriteMany
-        mountPath: /mnt/dump
-        subPath: planet-dumps
-        # In case cloudProvider: aws
-        storageSize: 5Gi
       env:
         CREATE_DUMP_SCHEDULE_CRON: '0 0 * * 0'
-      resources:
-        enabled: false
-        requests:
-          memory: '14Gi'
-          cpu: '4'
-        limits:
-          memory: '16Gi'
-          cpu: '4'
 
     # ====================================================================================================
     # Variables for replication-job, Configured to create replication files of minute
@@ -159,20 +95,7 @@ ingestion:
       image:
         repository: 'microcosm-replication-job'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: ReadWriteMany
-        mountPath: /mnt/replications
-        subPath: replication-dir/minute
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '2Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
+
     # ====================================================================================================
     # Variables for microcosm to populate the apidb
     # ====================================================================================================
@@ -183,14 +106,7 @@ ingestion:
         tag: 'v1'
       env:
         URL_FILE_TO_IMPORT: 'https://download.geofabrik.de/europe/andorra-latest.osm.pbf'
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2.5'
+
     # ====================================================================================================
     # Variables for replication-merger, Configured to create the replication files by,hour, day or week
     # ====================================================================================================
@@ -199,20 +115,6 @@ ingestion:
       image:
         repository: 'microcosm-replication-merger'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: ReadWriteMany
-        mountPath: /mnt/data
-        subPath: replication-dir
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '2Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
       timeUnits:
         - name: hour
           based_on: minute
@@ -232,21 +134,6 @@ ingestion:
     # ====================================================================================================
     replicationHttpServer:
       enabled: true
-      persistenceDisk:
-        enabled: true
-        accessMode: ReadWriteMany
-        mountPath: /usr/share/nginx/html
-        subPath: replication-dir
-        # In case cloudProvider: aws
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '2Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
 
 earthTiles:
@@ -257,7 +144,6 @@ earthTiles:
     host: earth-tiles-db
     db: tiler-osm
     port: 5432
-
   pods:
     # ====================================================================================================
     # Variables for earth tiles database for rendering
@@ -267,20 +153,6 @@ earthTiles:
       image:
         repository: 'microcosm-tiles-db'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /var/lib/postgresql/data
-        subPath: external-data-db
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '1'
 
       # ====================================================================================================
       # Variables for earth tiles loader
@@ -292,14 +164,6 @@ earthTiles:
         tag: 'v1'
       env:
         LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
 vectorTiles:
   enabled: true
@@ -318,22 +182,6 @@ vectorTiles:
       image:
         repository: 'microcosm-tiles-db'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /var/lib/postgresql/data
-        subPath: tegola-postgresql-db
-        # In case cloudProvider: aws
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2.5'
-
 
     # ====================================================================================================
     # Variables for imposm
@@ -346,27 +194,6 @@ vectorTiles:
       env:
         CONFIG_EXPIRED_TILES_ZOOM: 14
         CONFIG_REPLICATION_INTERVAL: 1m
-      persistenceDisk:
-        data:
-          enabled: true
-          accessMode: readWriteMany
-          mountPath: /mnt/data/
-          subPath: imposm-data
-          storageSize: 5Gi
-        expired:
-          enabled: true
-          accessMode: ReadWriteMany
-          mountPath: /mnt/expired-tiles
-          subPath: imposm-expired
-          storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
     # ====================================================================================================
     # Variables for tegola
@@ -388,26 +215,6 @@ vectorTiles:
         TILER_CACHE_MIN_ZOOM: 14
         EXPIRE_TILES_DIR: /mnt/expiretiles
         TILER_CACHE_UPDATE_INTERVAL: 60
-        # in case s3
-        # TILER_CACHE_BUCKET: microcosm-tiler
-        # TILER_CACHE_REGION: us-east-1
-        # TILER_CACHE_AWS_ACCESS_KEY_ID: xyz
-        # TILER_CACHE_AWS_SECRET_ACCESS_KEY: xyz/q
-      # In case you use TILER_CACHE_TYPE: file with  persistenceDisk
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /mnt/data
-        # In case cloudProvider: aws
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
 rasterizedTiles:
   enabled: true
@@ -417,7 +224,6 @@ rasterizedTiles:
     host: tiler-db
     db: tiler-osm
     port: 5432
-
   pods:
     # ====================================================================================================
     # Variables for rasterized-tiles-db
@@ -427,20 +233,6 @@ rasterizedTiles:
       image:
         repository: 'microcosm-tiles-db'
         tag: 'v1'
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /var/lib/postgresql/data
-        subPath: renderer-postgresql-db
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2.5'
 
     # ====================================================================================================
     # Variables for osm2pgsql
@@ -454,20 +246,6 @@ rasterizedTiles:
         UPDATE_INTERVAL: 60
         REPLICATION_DIRECTORY: /mnt/replication
         EXPIRED_DIRECTORY: /mnt/expired
-      persistenceDisk:
-        enabled: true
-        accessMode: ReadWriteMany
-        subPath: osm2pgsql-expired
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
-
 
     # ====================================================================================================
     # Variables for mod-tile
@@ -478,23 +256,7 @@ rasterizedTiles:
         repository: 'microcosm-mod-tile'
         tag: 'v1'
       replicaCount: 1
-      service:
-        nodePort: 30102
       env:
         EXPIRED_DIRECTORY: /mnt/expired
         TILE_EXPIRE_MIN_ZOOM: 14
-      persistenceDisk:
-        enabled: true
-        accessMode: readWriteMany
-        mountPath: /var/lib/mod_tile
-        subPath: mod_tile_cache
-        storageSize: 5Gi
-      resources:
-        enabled: false
-        requests:
-          memory: '1Gi'
-          cpu: '1'
-        limits:
-          memory: '2Gi'
-          cpu: '2'
 
