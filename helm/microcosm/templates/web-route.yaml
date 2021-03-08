@@ -1,0 +1,17 @@
+{{- if and .Values.ingestion.enabled (ne .Values.cloudProvider.name "minikube") -}}
+{{- with .Values.ingestion.pods.web }}
+{{- if and .enabled .route.enabled -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $.Release.Name }}-web-route
+spec:
+  path:  {{ .route.path }}
+  to:
+    kind: Service
+    name: {{ $.Release.Name }}-web
+  # tls:
+  #   termination: edge
+{{- end -}}
+{{- end -}}
+{{- end -}}

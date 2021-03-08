@@ -1,4 +1,4 @@
-{{- if .Values.modTile.enabled -}}
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.modTile.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -8,19 +8,9 @@ metadata:
     component: mod-tile-service
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
-  {{- if eq .Values.cloudProvider "aws" }}
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
-  {{- end }}
 spec:
-  # In case cloudProvider=aws
-  {{- if eq .Values.cloudProvider "aws" }}
-  type: LoadBalancer
-  {{- end }}
-  
-
   # In case cloudProvider=minikube
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if eq .Values.cloudProvider.name  "minikube" }}
   type: NodePort
   {{- end }}
   
@@ -29,8 +19,8 @@ spec:
       targetPort: 80
       protocol: TCP
       name: http
-      {{- if eq .Values.cloudProvider "minikube" }}
-      nodePort: {{ .Values.modTile.service.nodePort }}
+      {{- if eq .Values.cloudProvider.name  "minikube" }}
+      nodePort: {{ .Values.rasterizedTiles.pods.modTile.service.nodePort }}
       {{- end }}
   selector:
     app: {{ template "microcosm.name" . }}

@@ -1,5 +1,5 @@
-{{- if .Values.imposm.enabled -}}
-{{- if .Values.imposm.persistenceDisk.data.enabled -}}
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.imposm.enabled -}}
+{{- if .Values.vectorTiles.pods.imposm.persistenceDisk.data.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -12,7 +12,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app:  {{ .Release.Name }}-imposm
+      app: {{ .Release.Name }}-imposm
   replicas: 1
   serviceName: {{ .Release.Name }}-imposm
   template:
@@ -22,73 +22,78 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-imposm
-        {{- if eq .Values.cloudProvider "aws" }} 
-        image: "{{ .Values.imposm.image.aws }}"
+        {{- if eq .Values.cloudProvider.name  "minikube" }} 
+        image: {{ .Values.vectorTiles.pods.imposm.image.repository }}:{{ .Values.vectorTiles.pods.imposm.image.tag }}
+        {{- else }}
+        image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.vectorTiles.pods.imposm.image.repository }}:{{ .Values.vectorTiles.pods.imposm.image.tag }}
         {{- end }}
-        {{- if eq .Values.cloudProvider "minikube" }} 
-        image: "{{ .Values.imposm.image.minikube }}"
-        {{- end }}
-        {{- if .Values.imposm.resources.enabled }}
+        {{- if .Values.vectorTiles.pods.imposm.resources.enabled }}
         resources:
           requests:
-            memory: {{ .Values.imposm.resources.requests.memory }}
-            cpu: {{ .Values.imposm.resources.requests.cpu }}
+            memory: {{ .Values.vectorTiles.pods.imposm.resources.requests.memory }}
+            cpu: {{ .Values.vectorTiles.pods.imposm.resources.requests.cpu }}
           limits:
-            memory: {{ .Values.imposm.resources.limits.memory }}
-            cpu: {{ .Values.imposm.resources.limits.cpu }}
+            memory: {{ .Values.vectorTiles.pods.imposm.resources.limits.memory }}
+            cpu: {{ .Values.vectorTiles.pods.imposm.resources.limits.cpu }}
         {{- end }}
         env:
-          - name: POSTGRES_HOST
-            value: {{ .Release.Name }}-vector-tiles-db
-          - name: POSTGRES_DB
-            value: {{ .Values.vectorTilesDb.env.POSTGRES_DB }}
+          - name: OSM_POSTGRES_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-configmap
+                key: host
+          - name: OSM_POSTGRES_DB
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-vector-tiles-configmap
+                key: database
           - name: POSTGRES_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-vector-tiles-db-secret
+                name: {{ .Release.Name }}-vector-tiles-secret
                 key: password
           - name: POSTGRES_USER
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-vector-tiles-db-secret
+                name: {{ .Release.Name }}-vector-tiles-secret
                 key: username
           - name: POSTGRES_PORT
-            value: {{ .Values.vectorTilesDb.env.POSTGRES_PORT | quote }}
+            value: {{ .Values.vectorTiles.dbConfig.port | quote }}
           - name: CONFIG_REPLICATION_INTERVAL
-            value: {{ .Values.imposm.env.CONFIG_REPLICATION_INTERVAL }}
+            value: {{ .Values.vectorTiles.pods.imposm.env.CONFIG_REPLICATION_INTERVAL }}
           - name: IMPOSM_REPLICATION_URL
             value: http://{{ .Release.Name }}-replication-http-server/minute/
           - name: CONFIG_EXPIRED_TILES_ZOOM
-            value: {{ quote .Values.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
+            value: {{ quote .Values.vectorTiles.pods.imposm.env.CONFIG_EXPIRED_TILES_ZOOM }}
           - name: CONFIG_EXPIRED_TILES_DIR
-            value: {{ .Values.imposm.persistenceDisk.expired.mountPath }}
+            value: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.expired.mountPath }}
           # - name: CONFIG_CACHE_DIR
-          #   value: {{ .Values.imposm.env.CONFIG_CACHE_DIR }}
+          #   value: {{ .Values.vectorTiles.pods.imposm.env.CONFIG_CACHE_DIR }}
           # - name: CONFIG_DIFF_DIR
-          #   value: {{ .Values.imposm.env.CONFIG_DIFF_DIR }}
+          #   value: {{ .Values.vectorTiles.pods.imposm.env.CONFIG_DIFF_DIR }}
           - name: CLOUDPROVIDER
-            value: {{ .Values.cloudProvider }}
+            value: {{ .Values.cloudProvider.name  }}
           # In case cloudProvider=aws
-          {{- if eq .Values.cloudProvider "aws" }}
-          - name: AWS_S3_BUCKET
-            value: {{ .Values.AWS_S3_BUCKET }}
-          {{- end }}
+          # {{- if eq .Values.cloudProvider.name  "aws" }}
+          # - name: AWS_S3_BUCKET
+          #   value: {{ .Values.AWS_S3_BUCKET }}
+          # {{- end }}
         volumeMounts:
-        - mountPath: {{ .Values.imposm.persistenceDisk.data.mountPath }}
+        - mountPath: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.data.mountPath }}
           name: imposm-data
-        - mountPath: {{ .Values.imposm.persistenceDisk.expired.mountPath }}
+        - mountPath: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.expired.mountPath }}
           name: imposm-expired
       restartPolicy: Always
       volumes:
         - name: imposm-data
-        {{- if .Values.imposm.persistenceDisk.data.enabled }}
+        {{- if .Values.vectorTiles.pods.imposm.persistenceDisk.data.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-imposm-data-pv-claim
         {{- else }}
           emptyDir: {}
         {{- end }}
         - name: imposm-expired
-        {{- if .Values.imposm.persistenceDisk.expired.enabled }}
+        {{- if .Values.vectorTiles.pods.imposm.persistenceDisk.expired.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-imposm-expired-pv-claim
         {{- else }}

@@ -1,0 +1,22 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.webDb.enabled -}}
+{{- if .Values.ingestion.pods.webDb.persistenceDisk.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-web-db-pv-claim
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: db-pd
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
+  {{- end }}
+  accessModes:
+    - {{ .Values.ingestion.pods.webDb.persistenceDisk.accessMode }}
+  resources:
+    requests:
+     storage: {{ .Values.ingestion.pods.webDb.persistenceDisk.storageSize }}
+{{- end }}
+{{- end }}

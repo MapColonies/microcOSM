@@ -1,0 +1,20 @@
+{{- if and .Values.global.deployConfig .Values.ingestion.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-web-configmap
+  annotations:
+    "helm.sh/resource-policy": keep
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-configmap
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+data:
+  {{- if .Values.ingestion.pods.webDb.enabled }}
+  host: {{ .Release.Name }}-web-db
+  {{- else }}
+  host:  {{ .Values.ingestion.dbConfig.host }}
+  {{- end }}
+  database: {{ .Values.ingestion.dbConfig.db }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if .Values.rasterizedTilesDb.enabled -}}
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.db.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -25,11 +25,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-rasterized-tiles-db
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.rasterizedTilesDb.image.aws }}"
-          {{- end }}
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.rasterizedTilesDb.image.minikube }}"
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.rasterizedTiles.pods.db.image.repository }}:{{ .Values.rasterizedTiles.pods.db.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.rasterizedTiles.pods.db.image.repository }}:{{ .Values.rasterizedTiles.pods.db.image.tag }}
           {{- end }}
           ports:
             - name: postgres
@@ -38,10 +37,16 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
-            - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-rasterized-tiles-db
-            - name: POSTGRES_DB
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+            - name: OSM_POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-configmap
+                  key: host
+            - name: OSM_POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -53,14 +58,14 @@ spec:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: username
             - name: POSTGRES_PORT
-              value: {{ quote .Values.rasterizedTilesDb.env.POSTGRES_PORT }}
+              value: {{ quote .Values.rasterizedTiles.dbConfig.port | quote}}
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-rasterized-tiles-db-secret
                   key: username  
             - name: PGDATA
-              value: {{ .Values.rasterizedTilesDb.persistenceDisk.mountPath }}
+              value: {{ .Values.rasterizedTiles.pods.db.persistenceDisk.mountPath }}
             - name: POD_IP
               valueFrom: { fieldRef: { fieldPath: status.podIP } }
           livenessProbe:
@@ -83,20 +88,20 @@ spec:
             periodSeconds: 5
           volumeMounts:
             - name: postgres-storage
-              mountPath: {{ .Values.rasterizedTilesDb.persistenceDisk.mountPath }}
-              subPath: {{ .Values.rasterizedTilesDb.persistenceDisk.subPath }}
-          {{- if .Values.rasterizedTilesDb.resources.enabled }}
+              mountPath: {{ .Values.rasterizedTiles.pods.db.persistenceDisk.mountPath }}
+              subPath: {{ .Values.rasterizedTiles.pods.db.persistenceDisk.subPath }}
+          {{- if .Values.rasterizedTiles.pods.db.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.rasterizedTilesDb.resources.requests.memory }}
-              cpu: {{ .Values.rasterizedTilesDb.resources.requests.cpu }}
+              memory: {{ .Values.rasterizedTiles.pods.db.resources.requests.memory }}
+              cpu: {{ .Values.rasterizedTiles.pods.db.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.rasterizedTilesDb.resources.limits.memory }}
-              cpu: {{ .Values.rasterizedTilesDb.resources.limits.cpu }}
+              memory: {{ .Values.rasterizedTiles.pods.db.resources.limits.memory }}
+              cpu: {{ .Values.rasterizedTiles.pods.db.resources.limits.cpu }}
           {{- end }}
       volumes:
         - name: postgres-storage
-        {{- if .Values.rasterizedTilesDb.persistenceDisk.enabled }}
+        {{- if .Values.rasterizedTiles.pods.db.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-rasterized-tiles-db-pv-claim
         {{- else }}

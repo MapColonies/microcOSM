@@ -1,4 +1,4 @@
-{{- if .Values.earthTilesLoader.enabled -}}
+{{- if and .Values.earthTiles.enabled .Values.earthTiles.pods.loader.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,37 +24,42 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-earth-tiles-loader
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.earthTilesLoader.image.aws }}"
+          {{- if eq .Values.cloudProvider.name "minikube" }} 
+          image: {{ .Values.earthTiles.pods.loader.image.repository }}:{{ .Values.earthTiles.pods.loader.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.earthTiles.pods.loader.image.repository }}:{{ .Values.earthTiles.pods.loader.image.tag }}
           {{- end }}
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.earthTilesLoader.image.minikube }}"
-          {{- end }}
-          {{- if .Values.earthTilesLoader.resources.enabled }}
+          {{- if .Values.earthTiles.pods.loader.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.earthTilesLoader.resources.requests.memory }}
-              cpu: {{ .Values.earthTilesLoader.resources.requests.cpu }}
+              memory: {{ .Values.earthTiles.pods.loader.resources.requests.memory }}
+              cpu: {{ .Values.earthTiles.pods.loader.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.earthTilesLoader.resources.limits.memory }}
-              cpu: {{ .Values.earthTilesLoader.resources.limits.cpu }}
+              memory: {{ .Values.earthTiles.pods.loader.resources.limits.memory }}
+              cpu: {{ .Values.earthTiles.pods.loader.resources.limits.cpu }}
           {{- end }}
           env:
             - name: LOAD_EXTERNAL_SCHEDULE_CRON
-              value: {{ .Values.earthTilesLoader.env.LOAD_EXTERNAL_SCHEDULE_CRON }}
+              value: {{ .Values.earthTiles.pods.loader.env.LOAD_EXTERNAL_SCHEDULE_CRON }}
             - name: POSTGRES_HOST
-              value: {{ .Release.Name }}-earth-tiles-db # This should give us the host for DB on the cluster.
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-configmap
+                  key: host
             - name: POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-configmap
+                  key: database
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: password
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: username
             - name: OGR_ENABLE_PARTIAL_REPROJECTION
               value: 'true'

@@ -1,4 +1,4 @@
-{{- if .Values.imposm.enabled -}}
+{{- if and .Values.vectorTiles.enabled .Values.vectorTiles.pods.imposm.enabled -}}
 ## WHY THIS EXISTS? ##
 apiVersion: v1
 kind: Service

@@ -1,4 +1,5 @@
-{{- if .Values.modTile.enabled -}}
+
+{{- if and .Values.rasterizedTiles.enabled .Values.rasterizedTiles.pods.modTile.enabled -}}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -9,7 +10,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.modTile.replicaCount }}
+  replicas: {{ .Values.rasterizedTiles.pods.modTile.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "microcosm.name" . }}
@@ -25,11 +26,10 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}-mod-tile
-          {{- if eq .Values.cloudProvider "aws" }} 
-          image: "{{ .Values.modTile.image.aws }}"
-          {{- end }}
-          {{- if eq .Values.cloudProvider "minikube" }} 
-          image: "{{ .Values.modTile.image.minikube }}"
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.rasterizedTiles.pods.modTile.image.repository }}:{{ .Values.rasterizedTiles.pods.modTile.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.rasterizedTiles.pods.modTile.image.repository }}:{{ .Values.rasterizedTiles.pods.modTile.image.tag }}
           {{- end }}
           ports:
             - name: http
@@ -39,78 +39,84 @@ spec:
             httpGet:
               path: /
               port: 80
-            {{- if eq .Values.cloudProvider "aws" }} 
-            initialDelaySeconds: 600 # 10 min, because the compile process takes time.
-            {{- end }}
-            {{- if eq .Values.cloudProvider "minikube" }} 
+            {{- if eq .Values.cloudProvider.name  "minikube" }} 
             initialDelaySeconds: 1200 # can take longer in local env with few resources.
             {{- end }}
             timeoutSeconds: 30
-            {{- if .Values.modTile.resources.enabled }}
+            {{- if .Values.rasterizedTiles.pods.modTile.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.modTile.resources.requests.memory }}
-              cpu: {{ .Values.modTile.resources.requests.cpu }}
+              memory: {{ .Values.rasterizedTiles.pods.modTile.resources.requests.memory }}
+              cpu: {{ .Values.rasterizedTiles.pods.modTile.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.modTile.resources.limits.memory }}
-              cpu: {{ .Values.modTile.resources.limits.cpu }}
+              memory: {{ .Values.rasterizedTiles.pods.modTile.resources.limits.memory }}
+              cpu: {{ .Values.rasterizedTiles.pods.modTile.resources.limits.cpu }}
           {{- end }}
           env:
               # tiler-db env variables
             - name: OSM_POSTGRES_HOST
-              value: {{ .Release.Name }}-rasterized-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-configmap
+                  key: host
             - name: OSM_POSTGRES_DB
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-rasterized-tiles-configmap
+                  key: database
             - name: OSM_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-rasterized-tiles-db-secret
+                  name: {{ .Release.Name }}-rasterized-tiles-secret
                   key: password  
-            - name: OSM_POSTGRES_PORT
-              value: {{ quote .Values.rasterizedTilesDb.env.POSTGRES_PORT }}
             - name: OSM_POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-rasterized-tiles-db-secret
+                  name: {{ .Release.Name }}-rasterized-tiles-secret
                   key: username       
             - name: OSM_POSTGRES_PORT
-              value: {{ .Values.rasterizedTilesDb.env.POSTGRES_PORT | quote }}
+              value: {{ .Values.rasterizedTiles.dbConfig.port | quote  }}
             - name: EARTH_TILES_POSTGRES_HOST
-              value: {{ .Release.Name }}-earth-tiles-db
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-configmap
+                  key: host
             - name: EARTH_TILES_POSTGRES_DB
-              value: {{ .Values.earthTilesDb.env.POSTGRES_DB }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-earth-tiles-configmap
+                  key: database
             - name: EARTH_TILES_POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: password
             - name: EARTH_TILES_POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-earth-tiles-db-secret
+                  name: {{ .Release.Name }}-earth-tiles-secret
                   key: username
             - name: EXPIRED_DIR
-              value: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
+              value: {{ .Values.rasterizedTiles.pods.modTile.env.EXPIRED_DIRECTORY }}
             - name: RENDER_EXPIRED_TILES_INTERVAL
-              value: {{ quote .Values.osm2pgsql.env.UPDATE_INTERVAL }}
+              value: {{ quote .Values.rasterizedTiles.pods.osm2pgsql.env.UPDATE_INTERVAL }}
           volumeMounts:
-          - mountPath: {{ .Values.modTile.persistenceDisk.mountPath }}
+          - mountPath: {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.mountPath }}
             name: mod-tile-tile-cache
-            subPath: {{ .Values.modTile.persistenceDisk.subPath }}
-          - mountPath: {{ .Values.modTile.env.EXPIRED_DIRECTORY }}
+            subPath: {{ .Values.rasterizedTiles.pods.modTile.persistenceDisk.subPath }}
+          - mountPath: {{ .Values.rasterizedTiles.pods.modTile.env.EXPIRED_DIRECTORY }}
             name: expired-storage
-            # subPath: {{ .Values.osm2pgsql.persistenceDisk.subPath }}
       restartPolicy: Always
       volumes:
         - name: mod-tile-tile-cache
-        {{- if .Values.modTile.persistenceDisk.enabled }}
+        {{- if .Values.rasterizedTiles.pods.modTile.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-mod-tile-pv-claim
         {{- else }}
           emptyDir: {}
         {{- end }}
         - name: expired-storage
-        {{- if .Values.osm2pgsql.persistenceDisk.enabled }}
+        {{- if .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-osm2pgsql-expired-pv-claim
         {{- else }}

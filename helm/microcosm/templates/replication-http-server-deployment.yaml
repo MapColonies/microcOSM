@@ -1,4 +1,4 @@
-{{- if .Values.replicationHttpServer.enabled -}}
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.replicationHttpServer.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,31 +33,26 @@ spec:
             timeoutSeconds: 30
           volumeMounts:
             - name: replication-storage
-              mountPath: {{ .Values.replicationHttpServer.persistenceDisk.mountPath }}
+              mountPath: {{ .Values.ingestion.pods.replicationHttpServer.persistenceDisk.mountPath }}
             - name: nginx-conf
               mountPath: /etc/nginx/conf.d
               readOnly: true
-          {{- if .Values.replicationHttpServer.resources.enabled }}
+          {{- if .Values.ingestion.pods.replicationHttpServer.resources.enabled }}
           resources:
             requests:
-              memory: {{ .Values.replicationHttpServer.resources.requests.memory }}
-              cpu: {{ .Values.replicationHttpServer.resources.requests.cpu }}
+              memory: {{ .Values.ingestion.pods.replicationHttpServer.resources.requests.memory }}
+              cpu: {{ .Values.ingestion.pods.replicationHttpServer.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.replicationHttpServer.resources.limits.memory }}
-              cpu: {{ .Values.replicationHttpServer.resources.limits.cpu }}
+              memory: {{ .Values.ingestion.pods.replicationHttpServer.resources.limits.memory }}
+              cpu: {{ .Values.ingestion.pods.replicationHttpServer.resources.limits.cpu }}
           {{- end }}
 
           env:
             - name: CLOUDPROVIDER
               value: 'minikube'
-            # In case cloudProvider=aws
-            #{{- if eq .Values.cloudProvider "aws" }}
-            #- name: AWS_S3_BUCKET
-            #  value: {{ .Values.AWS_S3_BUCKET }}
-            #{{- end }}
       volumes:
         - name: replication-storage
-        {{- if .Values.replicationHttpServer.persistenceDisk.enabled }}
+        {{- if .Values.ingestion.pods.replicationHttpServer.persistenceDisk.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-replication-http-server-pv-claim
         {{- else }}

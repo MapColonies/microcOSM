@@ -1,4 +1,4 @@
-{{- if .Values.replicationJob.enabled -}}
+{{- if  and .Values.ingestion.enabled .Values.ingestion.pods.replicationJob.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,7 +9,7 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  {{- if eq .Values.cloudProvider "minikube" }}
+  {{- if eq .Values.cloudProvider.name  "minikube" }}
   type: NodePort
   {{- end }}
   ports:

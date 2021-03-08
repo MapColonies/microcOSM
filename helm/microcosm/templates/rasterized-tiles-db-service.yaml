@@ -1,4 +1,4 @@
-{{- if .Values.rasterizedTilesDb.enabled -}}
+{{- if .Values.rasterizedTiles.pods.db.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -12,7 +12,7 @@ spec:
   ports:
     - port: 5432
       targetPort: 5432
-      # protocol: TCP
+      # protocol: TCP.Values.rasterizedTiles.pods.db.
       # name: http
   selector:
     app: {{ template "microcosm.name" . }}
