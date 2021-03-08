@@ -74,10 +74,10 @@ spec:
           - name: CLOUDPROVIDER
             value: {{ .Values.cloudProvider.name  }}
           # In case cloudProvider=aws
-          {{- if eq .Values.cloudProvider.name  "aws" }}
-          - name: AWS_S3_BUCKET
-            value: {{ .Values.AWS_S3_BUCKET }}
-          {{- end }}
+          # {{- if eq .Values.cloudProvider.name  "aws" }}
+          # - name: AWS_S3_BUCKET
+          #   value: {{ .Values.AWS_S3_BUCKET }}
+          # {{- end }}
         volumeMounts:
         - mountPath: {{ .Values.vectorTiles.pods.imposm.persistenceDisk.data.mountPath }}
           name: imposm-data

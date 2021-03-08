@@ -50,11 +50,6 @@ spec:
           env:
             - name: CLOUDPROVIDER
               value: 'minikube'
-            # In case cloudProvider=aws
-            #{{- if eq .Values.cloudProvider.name  "aws" }}
-            #- name: AWS_S3_BUCKET
-            #  value: {{ .Values.AWS_S3_BUCKET }}
-            #{{- end }}
       volumes:
         - name: replication-storage
         {{- if .Values.ingestion.pods.replicationHttpServer.persistenceDisk.enabled }}

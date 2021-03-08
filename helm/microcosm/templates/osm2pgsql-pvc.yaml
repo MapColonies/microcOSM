@@ -17,7 +17,6 @@ spec:
     - {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.accessMode }}
   resources:
     requests:
-      # AWS Provider
       storage: {{ .Values.rasterizedTiles.pods.osm2pgsql.persistenceDisk.storageSize }}
 {{- end }}
 {{- end }}

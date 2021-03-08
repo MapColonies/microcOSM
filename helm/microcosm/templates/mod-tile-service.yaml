@@ -8,17 +8,7 @@ metadata:
     component: mod-tile-service
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
-  {{- if eq .Values.cloudProvider.name  "aws" }}
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
-  {{- end }}
 spec:
-  # In case cloudProvider=aws
-  {{- if eq .Values.cloudProvider.name  "aws" }}
-  type: LoadBalancer
-  {{- end }}
-  
-
   # In case cloudProvider=minikube
   {{- if eq .Values.cloudProvider.name  "minikube" }}
   type: NodePort

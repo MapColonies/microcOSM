@@ -9,10 +9,6 @@ metadata:
     environment: {{ .Values.environment }}
     release: {{ .Release.Name }}
 spec:
-  # In case cloudProvider=aws
-  {{- if eq .Values.cloudProvider.name  "aws" }}
-  type: LoadBalancer
-  {{- end }}
   # In case cloudProvider=minikube
   {{- if eq .Values.cloudProvider.name  "minikube" }}
   type: NodePort
