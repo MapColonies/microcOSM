@@ -3,7 +3,7 @@ echo $PWD
 set -e
 SHA=`git rev-parse HEAD`
 TAG=`git describe --abbrev=0 --tags`
-ECR=645470188746.dkr.ecr.eu-west-1.amazonaws.com
+ECR=acrarolibotnonprod.azurecr.io
 PROJECT=microcosm
 echo $TAG
 for d in */ ; do
