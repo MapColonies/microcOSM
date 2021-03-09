@@ -1,0 +1,22 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-cgimap-configmap
+data:
+  default.conf: |-
+    server {
+        server_name localhost;
+        listen 8080;
+
+        location = /status {
+            stub_status;
+        }
+
+        location / {
+            include /etc/nginx/fastcgi_params;
+            fastcgi_pass 127.0.0.1:8000;
+        }
+    }
+
+{{- end }}

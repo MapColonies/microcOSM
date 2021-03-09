@@ -1,0 +1,90 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-cgimap
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: cgimap-deployment
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.ingestion.pods.cgimap.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-cgimap
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-cgimap
+    spec:
+      containers:
+
+      containers:
+        - name: {{ .Chart.Name }}-cgimap-backend
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.ingestion.pods.cgimap.image.repository }}:{{ .Values.ingestion.pods.cgimap.image.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.cgimap.image.repository }}:{{ .Values.ingestion.pods.cgimap.image.tag }}
+          {{- end }}
+          command: ["/usr/local/bin/openstreetmap-cgimap"]
+          args: ["--port=8000", "--instances=30"]
+          # ports:
+          #   - name: fcgi
+          #     containerPort: 8000
+          #     protocol: TCP
+          {{- if .Values.ingestion.pods.cgimap.resources.enabled }}
+          resources:
+            requests:
+              memory: {{ .Values.ingestion.pods.cgimap.resources.requests.memory }}
+              cpu: {{ .Values.ingestion.pods.cgimap.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.ingestion.pods.cgimap.resources.limits.memory }}
+              cpu: {{ .Values.ingestion.pods.cgimap.resources.limits.cpu }}
+          {{- end }}
+          env:
+            - name: CGIMAP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: host
+            - name: CGIMAP_DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-web-configmap
+                  key: database
+            - name: CGIMAP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-secret
+                  key: password
+            - name: CGIMAP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-secret
+                  key: username
+        - name: {{ .Release.Name }}-cgimap-proxy
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ .Release.Name }}-cgimap-configmap
+{{- end }}

@@ -31,12 +31,12 @@ spec:
           {{- end }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           livenessProbe:
             httpGet:
               path: /api/0.6/capabilities
-              port: 80
+              port: 8080
             initialDelaySeconds: 600 # 10 min, because the compile process takes time.
             timeoutSeconds: 30
           {{- if .Values.ingestion.pods.web.resources.enabled }}
