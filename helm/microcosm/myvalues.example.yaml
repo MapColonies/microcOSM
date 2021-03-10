@@ -50,6 +50,9 @@ ingestion:
     host: web-db
     db: openstreetmap
     port: 5432
+  ingress:
+    enabled: true
+    hostname: localhost
   pods:
     # ====================================================================================================
     # Variables for microcosm database
@@ -75,6 +78,13 @@ ingestion:
       oauth:
         key: 'aaaaaa'
 
+    cgimap:
+      enabled: false
+      image:
+        repository: 'microcosm-cgimap'
+        tag: 'v1'
+      replicaCount: 1
+
 
     # ====================================================================================================
     # Variables for microcosm for planet-dump from the apidb
@@ -91,7 +101,7 @@ ingestion:
     # Variables for replication-job, Configured to create replication files of minute
     # ====================================================================================================
     replicationJob:
-      enabled: true
+      enabled: false
       image:
         repository: 'microcosm-replication-job'
         tag: 'v1'
@@ -100,7 +110,7 @@ ingestion:
     # Variables for microcosm to populate the apidb
     # ====================================================================================================
     populateApidb:
-      enabled: true
+      enabled: false
       image:
         repository: 'microcosm-populate-apidb'
         tag: 'v1'
@@ -137,7 +147,7 @@ ingestion:
 
 
 earthTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
@@ -166,7 +176,7 @@ earthTiles:
         LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
 
 vectorTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
@@ -217,7 +227,7 @@ vectorTiles:
         TILER_CACHE_UPDATE_INTERVAL: 60
 
 rasterizedTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
