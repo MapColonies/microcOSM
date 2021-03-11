@@ -21,6 +21,11 @@ global:
 ingress:
   enabled: false
 
+images:
+  nginx: 
+    repository: nginx
+    tag: 116
+
 
 # ====================================================================================================
 # Domain app configuration
