@@ -1,5 +1,6 @@
 #!/bin/bash
 echo $PWD
+
 set -e
 SHA=`git rev-parse HEAD`
 TAG=`git describe --abbrev=0 --tags`
