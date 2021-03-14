@@ -1,5 +1,6 @@
 # CGI map
 
+
 This container contains cgimap - an high performence partial implementation of the osm api
 
 ### Configuration
