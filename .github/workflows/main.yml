@@ -25,5 +25,5 @@ jobs:
         uses: Azure/pipelines@v1
         with:
           azure-devops-project-url: https://dev.azure.com/Libot-Mipui-Org/microcOSM
-          azure-pipeline-name: 'build-and-push-to-ACR'
+          azure-pipeline-name: 'build-and-push-to-ACR1'
           azure-devops-token: ${{ secrets.AZURE_DEVOPS_TOKEN }}
