@@ -1,15 +1,15 @@
 {{- if and .Values.ingestion.enabled (ne .Values.cloudProvider.name "minikube") -}}
-{{- with .Values.ingestion.pods.web }}
+{{- with .Values.ingestion.pods.cgimap }}
 {{- if and .enabled .route.enabled -}}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ $.Release.Name }}-web-route
+  name: {{ $.Release.Name }}-cgimap-route
 spec:
   path:  {{ .route.path }}
   to:
     kind: Service
-    name: {{ $.Release.Name }}-web
+    name: {{ $.Release.Name }}-cgimap
   {{- if .route.tls -}}
   tls:
     termination: edge

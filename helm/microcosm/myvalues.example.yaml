@@ -21,6 +21,11 @@ global:
 ingress:
   enabled: false
 
+images:
+  nginx: 
+    repository: nginx
+    tag: 116
+
 
 # ====================================================================================================
 # Domain app configuration
@@ -50,6 +55,9 @@ ingestion:
     host: web-db
     db: openstreetmap
     port: 5432
+  ingress:
+    enabled: false
+    hostname: localhost
   pods:
     # ====================================================================================================
     # Variables for microcosm database
@@ -70,10 +78,22 @@ ingestion:
         tag: 'v1'
       route:
         enabled: true
+        tls: false
         path: /
       replicaCount: 1
       oauth:
-        key: 'aaaaaa'
+        key: '<<PLACEHOLDER>>'
+
+    cgimap:
+      enabled: false
+      route:
+        enabled: true
+        tls: false
+        path: /
+      image:
+        repository: 'microcosm-cgimap'
+        tag: 'v1'
+      replicaCount: 1
 
 
     # ====================================================================================================
@@ -91,7 +111,7 @@ ingestion:
     # Variables for replication-job, Configured to create replication files of minute
     # ====================================================================================================
     replicationJob:
-      enabled: true
+      enabled: false
       image:
         repository: 'microcosm-replication-job'
         tag: 'v1'
@@ -100,7 +120,7 @@ ingestion:
     # Variables for microcosm to populate the apidb
     # ====================================================================================================
     populateApidb:
-      enabled: true
+      enabled: false
       image:
         repository: 'microcosm-populate-apidb'
         tag: 'v1'
@@ -137,7 +157,7 @@ ingestion:
 
 
 earthTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
@@ -166,7 +186,7 @@ earthTiles:
         LOAD_EXTERNAL_SCHEDULE_CRON: '0 4 * * 0'
 
 vectorTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
@@ -217,7 +237,7 @@ vectorTiles:
         TILER_CACHE_UPDATE_INTERVAL: 60
 
 rasterizedTiles:
-  enabled: true
+  enabled: false
   dbConfig:
     user: postgres
     password: '1234'
@@ -259,4 +279,3 @@ rasterizedTiles:
       env:
         EXPIRED_DIRECTORY: /mnt/expired
         TILE_EXPIRE_MIN_ZOOM: 14
-

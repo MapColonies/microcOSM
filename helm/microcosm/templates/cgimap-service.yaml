@@ -1,0 +1,25 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-cgimap
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: cgimap-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  # In case cloudProvider=minikube
+  {{- if eq .Values.cloudProvider.name  "minikube" }}
+  type: NodePort
+  {{- end }}
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-cgimap
+{{- end }}
