@@ -78,6 +78,7 @@ ingestion:
         tag: 'v1'
       route:
         enabled: true
+        tls: false
         path: /
       replicaCount: 1
       oauth:
@@ -85,6 +86,10 @@ ingestion:
 
     cgimap:
       enabled: false
+      route:
+        enabled: true
+        tls: false
+        path: /
       image:
         repository: 'microcosm-cgimap'
         tag: 'v1'

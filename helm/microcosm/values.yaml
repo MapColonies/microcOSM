@@ -76,7 +76,7 @@ ingestion:
     db: openstreetmap
     port: 5432
   ingress:
-    enabled: true
+    enabled: false
     hostname: localhost
   pods:
     # ====================================================================================================
@@ -112,6 +112,7 @@ ingestion:
         tag: 'v1'
       route:
         enabled: true
+        tls: false
         path: /
       replicaCount: 1
       oauth:
@@ -133,7 +134,11 @@ ingestion:
           cpu: '2'
 
     cgimap:
-      enabled: false
+      enabled: true
+      route:
+        enabled: true
+        tls: false
+        path: /
       image:
         repository: 'microcosm-cgimap'
         tag: 'v1'
