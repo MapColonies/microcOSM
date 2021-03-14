@@ -82,7 +82,7 @@ ingestion:
         path: /
       replicaCount: 1
       oauth:
-        key: 'aaaaaa'
+        key: '<<PLACEHOLDER>>'
 
     cgimap:
       enabled: false
@@ -279,4 +279,3 @@ rasterizedTiles:
       env:
         EXPIRED_DIRECTORY: /mnt/expired
         TILE_EXPIRE_MIN_ZOOM: 14
-

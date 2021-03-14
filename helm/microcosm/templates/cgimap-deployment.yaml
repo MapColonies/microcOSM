@@ -22,7 +22,6 @@ spec:
         release: {{ .Release.Name }}
         run: {{ .Release.Name }}-cgimap
     spec:
-      containers:
 
       containers:
         - name: {{ .Chart.Name }}-cgimap-backend
