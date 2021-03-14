@@ -56,7 +56,7 @@ ingestion:
     db: openstreetmap
     port: 5432
   ingress:
-    enabled: true
+    enabled: false
     hostname: localhost
   pods:
     # ====================================================================================================

@@ -73,6 +73,10 @@ spec:
           {{- else }}
           image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
           {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /status
