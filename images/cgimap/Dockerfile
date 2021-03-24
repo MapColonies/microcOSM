@@ -37,15 +37,20 @@ RUN apt-get update -qq && \
 
 COPY --from=builder /app/openstreetmap-cgimap /usr/local/bin
 
-RUN groupadd -g 61000 cgimap && \
-    useradd -g 61000 -l -M -s /bin/false -u 61000 cgimap
+WORKDIR /app
+
+COPY ./start.sh /app/start.sh
+
+RUN chgrp root /app/start.sh && chmod g+x ./start.sh && \
+    mkdir /.postgresql && chmod g+w /.postgresql 
+
+RUN useradd -ms /bin/bash cgimap && usermod -a -G root cgimap
 
 USER cgimap
 
 ENV CGIMAP_HOST db
 ENV CGIMAP_DBNAME openstreetmap
 ENV CGIMAP_USERNAME openstreetmap
-ENV CGIMAP_PASSWORD openstreetmap
 ENV CGIMAP_PIDFILE /dev/null
 ENV CGIMAP_LOGFILE /dev/stdout
 ENV CGIMAP_MEMCACHE memcached
@@ -54,4 +59,4 @@ ENV CGIMAP_MAXDEBT 250
 
 EXPOSE 8000
 
-CMD ["/usr/local/bin/openstreetmap-cgimap", "--port=8000", "--instances=30"]
+CMD ["/app/start.sh"]
