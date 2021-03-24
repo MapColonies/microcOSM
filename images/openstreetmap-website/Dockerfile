@@ -65,9 +65,9 @@ WORKDIR $workdir
 RUN rm -rf $workdir/* &&chgrp -R 0 $workdir && \
   chmod -R g=u $workdir
 # Clone the openstreetmap-website
-# gitsha ab31e016a348a13afa289b3a1c3acc4e4acfd8c4 at Sep 21, 2020
+# gitsha 76063e965731238010a3eb67b6019fb1a43d6fa4 at Mar 24, 2021
 RUN git clone https://github.com/openstreetmap/openstreetmap-website.git .  && \
-  git checkout ab31e016a348a13afa289b3a1c3acc4e4acfd8c4 && \
+  git checkout 76063e965731238010a3eb67b6019fb1a43d6fa4 && \
   chgrp -R 0 $workdir && \
   chmod -R g=u $workdir && \
   rm -rf .git
@@ -112,7 +112,7 @@ RUN a2dissite 000-default &&  \
   a2enmod proxy proxy_http rewrite && \
   apache2ctl configtest
 
-RUN sed -i -e 's/80/8080/g' /etc/apache2/ports.conf 
+RUN sed -i -e 's/80/8080/g' /etc/apache2/ports.conf
 
 ADD start.sh $workdir/start.sh
 
@@ -124,6 +124,9 @@ RUN chgrp -R 0 /var/log/web && \
     chmod -R g=u /var/run/apache2 && \
     chgrp -R 0 /etc/apache2 && \
     chmod -R g=u /etc/apache2
+
+RUN chgrp root $workdir/start.sh && chmod g+x $workdir/start.sh && \
+  mkdir /.postgresql && chmod g+w /.postgresql
 
 RUN useradd -ms /bin/bash user && usermod -a -G root user
 

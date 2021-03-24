@@ -2,7 +2,19 @@
 workdir="/var/www"
 # Because we can not set up many env variable sin build process, we are going to process here!
 # Setting up the production database
-echo " # Production DB 
+if [ "$ENABLE_DB_CERT_AUTH" = "true" ]
+then
+  cp /tmp/certs/* /.postgresql
+  chmod 400 /.postgresql/*.key
+  echo " # Production DB
+production:
+  adapter: postgresql
+  host: ${POSTGRES_HOST}
+  database: ${POSTGRES_DB}
+  username: ${POSTGRES_USER}
+  encoding: utf8" > $workdir/config/database.yml
+else
+  echo " # Production DB
 production:
   adapter: postgresql
   host: ${POSTGRES_HOST}
@@ -10,6 +22,8 @@ production:
   username: ${POSTGRES_USER}
   password: ${POSTGRES_PASSWORD}
   encoding: utf8" > $workdir/config/database.yml
+fi
+
 
 sed -i -e "s/export APACHE_RUN_USER=www-data/export APACHE_RUN_USER=$(whoami)/g" /etc/apache2/envvars
 sed -i -e "s/export APACHE_RUN_GROUP=www-data/export APACHE_RUN_GROUP=root/g" /etc/apache2/envvars
