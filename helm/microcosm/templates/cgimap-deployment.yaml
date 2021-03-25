@@ -30,8 +30,6 @@ spec:
           {{- else }}
           image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.cgimap.image.repository }}:{{ .Values.ingestion.pods.cgimap.image.tag }}
           {{- end }}
-          command: ["/usr/local/bin/openstreetmap-cgimap"]
-          args: ["--port=8000", "--instances=30"]
           # ports:
           #   - name: fcgi
           #     containerPort: 8000
@@ -56,16 +54,24 @@ spec:
                 configMapKeyRef:
                   name: {{ .Release.Name }}-web-configmap
                   key: database
-            - name: CGIMAP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Release.Name }}-web-secret
-                  key: password
             - name: CGIMAP_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-web-secret
                   key: username
+            {{ if not .Values.ingestion.dbConfig.certAuth.enabled }}
+            - name: CGIMAP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-web-secret
+                  key: password              
+            {{ else }}
+            - name: ENABLE_DB_CERT_AUTH
+              value: 'true'            
+          volumeMounts:
+            - name: certs
+              mountPath: /tmp/certs
+            {{ end }}
         - name: {{ .Release.Name }}-cgimap-proxy
           {{- if eq .Values.cloudProvider.name  "minikube" }} 
           image: {{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
@@ -90,4 +96,9 @@ spec:
         - name: nginx-conf
           configMap:
             name: {{ .Release.Name }}-cgimap-configmap
+        {{ if .Values.ingestion.dbConfig.certAuth.enabled }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.ingestion.dbConfig.certAuth.certSecretName }}
+        {{ end }}
 {{- end }}
