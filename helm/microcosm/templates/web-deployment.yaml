@@ -51,6 +51,10 @@ spec:
           env:
             - name: GET_HOSTS_FROM
               value: dns
+            {{ if .Values.ingestion.dbConfig.certAuth.enabled }}
+            - name: ENABLE_DB_CERT_AUTH
+              value: 'true'
+            {{ end }}
             - name: POSTGRES_HOST
               valueFrom:
                 configMapKeyRef:
@@ -96,4 +100,13 @@ spec:
             - name: SERVER_PROTOCOL
               value : http
               {{- end }}
+      {{ if .Values.ingestion.dbConfig.certAuth.enabled }}
+          volumeMounts:
+            - name: certs
+              mountPath: /tmp/certs
+      volumes:
+        - name: certs
+          secret:
+            secretName: {{ .Values.ingestion.dbConfig.certAuth.certSecretName }}
+      {{ end }}
 {{- end }}

@@ -54,6 +54,9 @@ ingestion:
     password: '1234'
     host: web-db
     db: openstreetmap
+    certAuth:
+      enabled: false
+      certSecretName: 'aaaaaaa'
     port: 5432
   ingress:
     enabled: false
