@@ -154,6 +154,22 @@ ingestion:
         limits:
           memory: '2Gi'
           cpu: '2'
+    
+    webProxy:
+      enabled: true
+      route:
+        enabled: true
+        tls: false
+        path: /
+      replicaCount: 1
+      resources:
+        enabled: false
+        requests:
+          memory: '1Gi'
+          cpu: '1'
+        limits:
+          memory: '2Gi'
+          cpu: '2'
 
     # ====================================================================================================
     # Variables for microcosm for planet-dump from the apidb

@@ -98,6 +98,13 @@ ingestion:
         tag: 'v1'
       replicaCount: 1
 
+    webProxy:
+      enabled: true
+      route:
+        enabled: true
+        tls: false
+        path: /
+      replicaCount: 1
 
     # ====================================================================================================
     # Variables for microcosm for planet-dump from the apidb

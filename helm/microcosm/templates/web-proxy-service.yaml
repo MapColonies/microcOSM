@@ -1,0 +1,26 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.webProxy.enabled -}}
+{{- if and .Values.ingestion.pods.web.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-web-proxy
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-proxy-service
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  {{- if eq .Values.cloudProvider.name  "minikube" }}
+  type: NodePort
+  {{- end }}
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "microcosm.name" . }}
+    release: {{ .Release.Name }}
+    run: {{ .Release.Name }}-web-proxy
+{{- end }}
+{{- end }}

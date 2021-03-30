@@ -1,0 +1,81 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.webProxy.enabled -}}
+{{- if and .Values.ingestion.pods.web.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-web-proxy-configmap
+data:
+  default.conf.template: |-
+    upstream ruby {
+      server {{ .Release.Name }}-web:{{ "${" }}{{ .Release.Name | upper | replace "-" "_" }}_WEB_SERVICE_PORT};
+    }
+
+    upstream cgimap {
+      server {{ .Release.Name }}-cgimap:{{ "${" }}{{ .Release.Name | upper | replace "-" "_" }}_CGIMAP_SERVICE_PORT};
+    }
+
+    server {
+        server_name localhost;
+        listen 8080;
+
+        location = /status {
+            stub_status;
+        }
+
+        location ~ ^/api/0\.6/map(\.(json|xml))?(\?(.*))?$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(node|way|relation)/[[:digit:]]+(\.(json|xml))?$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(node|way|relation)/[[:digit:]]+/history.*$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(node|way|relation)/[[:digit:]]+/[[:digit:]]+.*$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(node|way|relation)/[[:digit:]]+/relations$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/node/[[:digit:]]+/ways$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(way|relation)/[[:digit:]]+/full(\.(json|xml))?$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/changeset/[[:digit:]]+.*$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/(nodes|ways|relations)(\?(.*))?$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/changeset/[[:digit:]]+/download$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/changeset/[[:digit:]]+/upload.*$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/changeset/[[:digit:]]+/close.*$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^^/api/0\.6/changeset/[[:digit:]]+$ {
+          proxy_pass http://cgimap;
+        }
+        location ~ ^/api/0\.6/changeset/create.*$ {
+          proxy_pass http://cgimap;
+        }
+
+        # everything else
+        location / {
+            proxy_set_header  Host $host;
+            proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header  X-Forwarded-Proto $scheme;
+            # proxy_set_header  X-Forwarded-Ssl on; # Optional
+            proxy_set_header  X-Forwarded-Port $server_port;
+            proxy_set_header  X-Forwarded-Host $host;
+            proxy_pass http://ruby;
+        }
+    }
+
+{{- end }}
+{{- end }}

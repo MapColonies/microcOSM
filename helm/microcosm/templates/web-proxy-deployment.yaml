@@ -1,0 +1,59 @@
+{{- if and .Values.ingestion.enabled .Values.ingestion.pods.webProxy.enabled -}}
+{{- if and .Values.ingestion.pods.web.enabled .Values.ingestion.pods.cgimap.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web-proxy
+  labels:
+    app: {{ template "microcosm.name" . }}
+    component: web-proxy-deployment
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "microcosm.name" . }}
+      release: {{ .Release.Name }}
+      run: {{ .Release.Name }}-web-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ template "microcosm.name" . }}
+        release: {{ .Release.Name }}
+        run: {{ .Release.Name }}-web-proxy
+    spec:
+      containers:
+        - name: {{ $.Release.Name }}-web-proxy
+          {{- if eq .Values.cloudProvider.name  "minikube" }} 
+          image: {{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
+          {{- else }}
+          image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.images.nginx.repository }}:{{ .Values.images.nginx.tag }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            initialDelaySeconds: 360
+            timeoutSeconds: 30
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/templates
+              readOnly: true
+          {{ with .Values.ingestion.pods.webProxy.resources -}}
+          {{- if .enabled }}
+          resources:
+            requests:
+              memory: {{ .requests.memory }}
+              cpu: {{ .requests.cpu }}
+            limits:
+              memory: {{ .limits.memory }}
+              cpu: {{ .limits.cpu }}
+          {{- end -}}
+          {{- end }}
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ $.Release.Name }}-web-proxy-configmap
+{{- end }}
+{{- end }}
