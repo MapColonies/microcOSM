@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as builder
+FROM ubuntu:20.10 as builder
 WORKDIR /app
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential wget git-core libpng-dev libjpeg-dev
 RUN git clone -b 2.12.2 https://github.com/kornelski/pngquant.git && \
@@ -17,7 +17,7 @@ RUN wget http://iweb.dl.sourceforge.net/project/pmt/pngcrush/1.8.12/pngcrush-1.8
   cd pngcrush-1.8.12 && \
   make
 
-FROM ubuntu:20.04
+FROM ubuntu:20.10
 ENV workdir /var/www
 
 # Production OSM setup
