@@ -13,6 +13,7 @@ cloudProvider:
 global:
   deployConfig: true
   storageClass: 'whatever'
+  test: 1
 
 # ====================================================================================================
 # AWS: In case you are using the cloudProvider=aws set the below variables, We are assuming the nodes has a policies access to S3
