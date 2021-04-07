@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:rolling
 
 ENV IMPOSM_VERSION=0.11.0
 
