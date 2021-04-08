@@ -22,7 +22,6 @@ spec:
         release: {{ .Release.Name }}
         run: {{ .Release.Name }}-cgimap
     spec:
-
       containers:
         - name: {{ .Chart.Name }}-cgimap-backend
           {{- if eq .Values.cloudProvider.name  "minikube" }} 
@@ -30,10 +29,14 @@ spec:
           {{- else }}
           image: {{ .Values.cloudProvider.dockerRegisteryUrl }}/{{ .Values.ingestion.pods.cgimap.image.repository }}:{{ .Values.ingestion.pods.cgimap.image.tag }}
           {{- end }}
-          # ports:
-          #   - name: fcgi
-          #     containerPort: 8000
-          #     protocol: TCP
+          command:
+            - "/app/start.sh"
+          args:
+            - "--port=8000"
+            - "--instance=30"
+            - --changeset-timeout-open={{ .Values.ingestion.pods.cgimap.args.CHANGESET_TIMEOUT_OPEN }}
+            - --changeset-timeout-idle={{ .Values.ingestion.pods.cgimap.args.CHANGESET_TIMEOUT_IDLE }}
+            - --max-payload={{ .Values.ingestion.pods.cgimap.args.MAX_PAYLOAD }}
           {{- if .Values.ingestion.pods.cgimap.resources.enabled }}
           resources:
             requests:

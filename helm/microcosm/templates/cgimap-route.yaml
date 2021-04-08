@@ -10,10 +10,10 @@ spec:
   to:
     kind: Service
     name: {{ $.Release.Name }}-cgimap
-  {{- if .route.tls -}}
+  {{ if .route.tls }}
   tls:
     termination: edge
-  {{- end -}}
+  {{ end }}
 {{- end -}}
 {{- end -}}
 {{- end -}}
