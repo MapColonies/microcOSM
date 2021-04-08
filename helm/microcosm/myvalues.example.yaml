@@ -98,7 +98,6 @@ ingestion:
         tag: 'v1'
       replicaCount: 1
     args:
-      PORT: port
       INSTANCE: 30
       CHANGESET_TIMEOUT_OPEN: 1 day
       CHANGESET_TIMEOUT_IDLE: 1 day
