@@ -32,8 +32,8 @@ spec:
           command:
             - "/app/start.sh"
           args:
-            - "--port=8000"
-            - "--instance=30"
+            - --port={{ .Values.ingestion.pods.cgimap.args.PORT }}
+            - --instance={{ .Values.ingestion.pods.cgimap.args.INSTANCE }}
             - --changeset-timeout-open={{ .Values.ingestion.pods.cgimap.args.CHANGESET_TIMEOUT_OPEN }}
             - --changeset-timeout-idle={{ .Values.ingestion.pods.cgimap.args.CHANGESET_TIMEOUT_IDLE }}
             - --max-payload={{ .Values.ingestion.pods.cgimap.args.MAX_PAYLOAD }}

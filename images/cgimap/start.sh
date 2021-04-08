@@ -6,4 +6,4 @@ then
   chmod 400 /.postgresql/*.key
 fi
 
-/usr/local/bin/openstreetmap-cgimap --port=8000 --instances=30
+/usr/local/bin/openstreetmap-cgimap "$@"
