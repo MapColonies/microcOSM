@@ -10,10 +10,10 @@ spec:
   to:
     kind: Service
     name: {{ $.Release.Name }}-web
-  {{- if .route.tls -}}
+  {{ if .route.tls }}
   tls:
     termination: edge
-  {{- end -}}
+  {{ end }}
 {{- end -}}
 {{- end -}}
 {{- end -}}

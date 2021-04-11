@@ -97,6 +97,11 @@ ingestion:
         repository: 'microcosm-cgimap'
         tag: 'v1'
       replicaCount: 1
+    args:
+      INSTANCE: 30
+      CHANGESET_TIMEOUT_OPEN: 1 day
+      CHANGESET_TIMEOUT_IDLE: 1 day
+      MAX_PAYLOAD: "5000000"
 
 
     # ====================================================================================================
