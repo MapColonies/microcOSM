@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:groovy-20210614
 
 ENV IMPOSM_VERSION=0.11.0
 
