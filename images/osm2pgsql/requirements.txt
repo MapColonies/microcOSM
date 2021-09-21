@@ -2,3 +2,4 @@ psycopg2==2.8.6
 mapcoloniesjsonlogger==1.0.0
 requests==2.24.0
 osmeterium==0.0.1
+urllib3>=1.26.5 # not directly required, pinned by Snyk to avoid a vulnerability
