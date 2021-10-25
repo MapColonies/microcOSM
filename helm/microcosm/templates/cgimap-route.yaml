@@ -5,6 +5,10 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: {{ $.Release.Name }}-cgimap-route
+  {{- if .route.timeout.enabled }}
+  annotations:
+    haproxy.router.openshift.io/timeout: {{ .route.timeout.duration }}
+  {{- end }}
 spec:
   path:  {{ .route.path }}
   to:
