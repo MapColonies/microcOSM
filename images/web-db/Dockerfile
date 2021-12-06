@@ -1,4 +1,4 @@
-FROM postgres:9.5
+FROM postgres:9.6
 RUN apt-get update
 RUN apt-get install -y make \
     postgresql-server-dev-9.5 \
