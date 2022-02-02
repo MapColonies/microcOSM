@@ -1,4 +1,4 @@
-FROM ubuntu:bionic as base
+FROM ubuntu:18.04 as base
 
 ARG APP_NAME=core/osm-web
 ARG BUILD_DATE
