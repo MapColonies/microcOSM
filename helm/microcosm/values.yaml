@@ -163,6 +163,25 @@ ingestion:
         CHANGESET_TIMEOUT_OPEN: 1 day
         CHANGESET_TIMEOUT_IDLE: 1 day
         MAX_PAYLOAD: "5000000"
+      probes:
+        backend:
+          readiness:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          liveness:
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 30
+            failureThreshold: 3
+        proxy:
+          readiness:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          liveness:
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
 
     # ====================================================================================================
     # Variables for microcosm for planet-dump from the apidb
