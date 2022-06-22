@@ -46,6 +46,18 @@ spec:
               memory: {{ .Values.ingestion.pods.cgimap.resources.limits.memory }}
               cpu: {{ .Values.ingestion.pods.cgimap.resources.limits.cpu }}
           {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: {{ .Values.ingestion.pods.cgimap.probes.backend.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ingestion.pods.cgimap.probes.backend.readiness.periodSeconds }}
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: {{ .Values.ingestion.pods.cgimap.probes.backend.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.ingestion.pods.cgimap.probes.backend.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.ingestion.pods.cgimap.probes.backend.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.ingestion.pods.cgimap.probes.backend.liveness.failureThreshold }}
           env:
             - name: CGIMAP_HOST
               valueFrom:
@@ -85,12 +97,19 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: {{ .Values.ingestion.pods.cgimap.probes.proxy.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.ingestion.pods.cgimap.probes.proxy.readiness.periodSeconds }}
           livenessProbe:
             httpGet:
               path: /status
               port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 30
+            initialDelaySeconds: {{ .Values.ingestion.pods.cgimap.probes.proxy.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.ingestion.pods.cgimap.probes.proxy.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.ingestion.pods.cgimap.probes.proxy.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.ingestion.pods.cgimap.probes.proxy.liveness.failureThreshold }}
           volumeMounts:
             - name: nginx-conf
               mountPath: /etc/nginx/conf.d
