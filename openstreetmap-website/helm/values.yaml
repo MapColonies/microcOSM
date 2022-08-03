@@ -1,0 +1,79 @@
+# Default values for helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  cloudProvider: {}
+  environment: {}
+
+annotations: {}
+podAnnotations: {}
+
+enabled: true
+replicaCount: 1
+environment: development
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+cloudProvider:
+  flavor: openshift
+  dockerRegistryUrl: my-registry.io
+
+image:
+  repository: 'microcosm-openstreetmap-website'
+  # Overrides the image tag whose default is the chart appVersion.
+  #tag: 'v1'
+  pullPolicy: Always
+
+service:
+  nodePort: 30100
+
+domain:
+  enabled: false
+  domainName: '192.168.49.2'
+  protocol: http
+
+resources:
+  enabled: false
+  value:
+    limits:
+      cpu: '2'
+      memory: '2Gi'
+    requests:
+      cpu: '1'
+      memory: '1Gi'
+
+dbConfig:
+  host: osmdb
+  username: postgres
+  password: postgres
+  database: openstreetmap
+  port: 5432
+  sslAuth:
+    enabled: false
+    secretName: secret-name
+
+env:
+  oauthKey: 'key'
+  extraEnv: |
+#   - name: KEY_1
+#     value: VALUE_1
+
+probes:
+  readiness:
+    initialDelaySeconds: 600
+    periodSeconds: 20
+  liveness:
+    initialDelaySeconds: 600
+    periodSeconds: 20
+    timeoutSeconds: 30
+    failureThreshold: 3
+
+route:
+  enabled: true
+  path: /
+  tls:
+    termination: edge
+  timeout:
+    enabled: false # defaults to 30s by openshift
+    duration: 60s # supported units (us, ms, s, m, h, d)
