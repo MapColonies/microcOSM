@@ -1,17 +1,15 @@
 # Docker setup for openstreetmap-website
 
-The docker container installs dependencies required for the website, checks out the latest openstreetmap-website code from github and sets up config files.
+This container contains openstreetmap-website
 
 ### Configuration
-
-To run the container needs a bunch of ENV variables which are:
 
 - **Configure the HOST and the PROTOCOL**
 
   - `SERVER_URL` We need to setup the url to the server to send the email
   - `SERVER_PROTOCOL` protocol, e.g `http`
 
-- \*\*Configure ID editor
+- **Configure ID editor**
 
   - `OAUTH_ID_KEY` the key to enable login
 
@@ -29,25 +27,13 @@ To run the container needs a bunch of ENV variables which are:
   - `POSTGRES_USER` - Database user
   - `POSTGRES_PASSWORD` - Database user's password
 
-Those parameters must be set up for the run the container, not required to build the container
-
 ### Building the container
 
-Before to start the api, you should first create the [api-db](https://github.com/developmentseed/microcosm/tree/master/db).
+### Build argument variables:
+- `OSMWEB_COMMIT_SHA` - the commit SHA of openstreetmap-website to be built.
 
 ```
-    cd openstreetmap-website/
-    docker network create microcosm_default
-    docker build -t microcosm-openstreetmap-website:v1 .
-```
-
-### Running the container
-
-```
-    docker run \
-    --env-file ./../.env \
-    --network microcosm_default \
-    -p "80:80" \
-    -h localhost \
-    -t microcosm-openstreetmap-website:v1
+    docker build \
+    --build-arg OSMWEB_COMMIT_SHA=d3388abe51a946ae0abc645d831a93b1b2cc6749 \
+    -f ./Dockerfile -t openstreetmap-website:latest .
 ```
