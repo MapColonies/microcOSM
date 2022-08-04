@@ -1,20 +1,3 @@
-.env
-.env-tiler
-usa.values.yaml
-prod.values.yaml
-planet.values.yaml
-values.tiler.yaml
-values.*.yaml
-*.values.yaml
-postgres-data/
-replication-job-data/
-populate-apidb-data/
-osm-processor-data/
-postgres-gis-data/
-tiler-imposm-data/
-tiler-server-data/
-postgres-gis-osm2pgsql-data/
-postgres-gis-imposm-data/
 **/myvalues.yaml
 
 .vscode
