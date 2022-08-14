@@ -1,4 +1,0 @@
-mapcoloniesjsonlogger==0.0.14
-psycopg2==2.8.6
-requests==2.24.0
-osmeterium==0.0.1

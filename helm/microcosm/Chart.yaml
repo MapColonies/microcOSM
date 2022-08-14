@@ -1,4 +1,0 @@
-apiVersion: v1
-description: 'Helm Chart to deploy the OpenStreetMap software'
-name: microcosm
-version: 0.1.1

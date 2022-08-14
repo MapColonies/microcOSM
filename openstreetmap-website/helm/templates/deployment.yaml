@@ -1,0 +1,107 @@
+{{- $releaseName := .Release.Name -}}
+{{- $chartName := include "openstreetmap-website.name" . -}}
+{{- $cloudProviderFlavor := include "openstreetmap-website.cloudProviderFlavor" . -}}
+{{- $cloudProviderDockerRegistryUrl := include "openstreetmap-website.cloudProviderDockerRegistryUrl" . -}}
+{{- $tag := include "openstreetmap-website.tag" . -}}
+{{- if .Values.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $releaseName }}-{{ $chartName }}
+  labels:
+    app: {{ $chartName }}
+    component: {{ $chartName }}
+    environment: {{ include "openstreetmap-website.environment" . }}
+    release: {{ $releaseName }}
+    {{- include "openstreetmap-website.labels" . | nindent 4 }}
+{{- with .Values.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ $chartName }}
+      release: {{ $releaseName }}
+      run: {{ $releaseName }}-{{ $chartName }}
+      {{- include "openstreetmap-website.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: {{ $chartName }}
+        release: {{ $releaseName }}
+        run: {{ $releaseName }}-{{ $chartName }}
+        environment: {{ include "openstreetmap-website.environment" . }}
+        {{- include "openstreetmap-website.selectorLabels" . | nindent 8 }}
+{{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+        - name: {{ $releaseName }}-{{ $chartName }}-deployment
+          {{- with .Values.image }}
+          {{- if ne $cloudProviderFlavor "minikube" }}
+          image: {{ $cloudProviderDockerRegistryUrl }}/{{ .repository }}:{{ $tag }}
+          {{- else }}
+          image: {{ .repository }}:{{ $tag }}
+          {{- end }}
+          imagePullPolicy: {{ .pullPolicy }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: /api/0.6/map?bbox=0,0,0,0
+              port: http
+            initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+            periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+            failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+          {{- if .Values.resources.enabled }}
+          resources:
+            {{- toYaml .Values.resources.value | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ $releaseName }}-{{ $chartName }}-configmap
+            - secretRef:
+                name: {{ $releaseName }}-{{ $chartName }}-secret
+            - secretRef:
+                name: {{ $releaseName }}-{{ $chartName }}-oauth-secret
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+              {{- if .Values.domain.enabled }}
+            - name: SERVER_URL
+              value: {{ .Values.domain.domainName }}
+            - name: SERVER_PROTOCOL
+              value : {{ .Values.domain.protocol }}
+              {{- else }}
+            - name: SERVER_URL
+              value: dns
+            - name: SERVER_PROTOCOL
+              value : http
+              {{- end }}
+            {{- with .Values.env.extraEnv }}
+            {{- tpl . $ | nindent 12 }}
+            {{- end }}
+      {{ if .Values.dbConfig.sslAuth.enabled }}
+          volumeMounts:
+            - name: cert-conf
+              mountPath: /tmp/certs
+              readOnly: true
+      volumes:
+        - name: cert-conf
+          secret:
+            secretName: {{ .Values.dbConfig.sslAuth.secretName }}
+      {{ end }}
+{{- end }}

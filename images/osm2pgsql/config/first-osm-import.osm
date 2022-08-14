@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<osm version="0.6" generator="microcosm" srs="+epsg:4326">
-    <bounds minlat="-90" minlon="-180" maxlat="90" maxlon="180"/>
-</osm>
