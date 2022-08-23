@@ -1,4 +1,8 @@
+
+
 FROM ubuntu:20.04 AS builder
+
+ARG CGIMAP_TAG=v0.8.3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -9,6 +13,7 @@ RUN apt-get update -qq && \
        libboost-filesystem-dev libboost-locale-dev libcrypto++-dev libyajl-dev \
        libpqxx-dev zlib1g-dev \
        postgresql-12 postgresql-server-dev-all \
+       libboost-dev libfmt-dev libargon2-dev \
        --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -16,7 +21,7 @@ RUN apt-get update -qq && \
 WORKDIR /app
 
 # Clone the main application.
-RUN git clone --depth 1 --branch v0.8.3 https://github.com/zerebubuth/openstreetmap-cgimap.git .
+RUN git clone --depth 1 --branch ${CGIMAP_TAG} https://github.com/zerebubuth/openstreetmap-cgimap.git .
 
 # Compile, install and remove source
 RUN ./autogen.sh && \
@@ -30,7 +35,7 @@ FROM ubuntu:20.04
 RUN apt-get update -qq && \
     apt-get install -y \
        libfcgi-bin libmemcached11 libboost-locale1.71.0 libboost-program-options1.71.0 \
-       libxml2 libcrypto++6 libyajl2 libpqxx-6.4 zlib1g \
+       libxml2 libcrypto++6 libyajl2 libpqxx-6.4 zlib1g libargon2-dev \
        --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

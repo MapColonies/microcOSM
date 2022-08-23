@@ -1,6 +1,11 @@
 FROM ubuntu:20.04 as builder
+
+ARG OSMWEB_COMMIT_SHA=76063e965731238010a3eb67b6019fb1a43d6fa4
+
 WORKDIR /app
+
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential wget git-core libpng-dev libjpeg-dev
+
 RUN git clone -b 2.12.2 https://github.com/kornelski/pngquant.git && \
   cd pngquant && \
   ./configure && \
@@ -18,6 +23,9 @@ RUN wget -O pngcrush-1.8.12.tar.gz https://sourceforge.net/projects/pmt/files/pn
   make
 
 FROM ubuntu:20.04
+
+ARG OSMWEB_COMMIT_SHA
+
 ENV workdir /var/www
 
 # Production OSM setup
@@ -67,7 +75,7 @@ RUN rm -rf $workdir/* &&chgrp -R 0 $workdir && \
 # Clone the openstreetmap-website
 # gitsha 76063e965731238010a3eb67b6019fb1a43d6fa4 at Mar 24, 2021
 RUN git clone https://github.com/openstreetmap/openstreetmap-website.git .  && \
-  git checkout 76063e965731238010a3eb67b6019fb1a43d6fa4 && \
+  git checkout ${OSMWEB_COMMIT_SHA} && \
   chgrp -R 0 $workdir && \
   chmod -R g=u $workdir && \
   rm -rf .git

@@ -121,3 +121,8 @@ csp_enforce: false
 #csp_report_url: ""
 
 storage_service: 'local'
+avatar_storage: "local"
+max_number_of_relation_members: 32000
+trace_file_storage: "local"
+trace_image_storage: "local"
+trace_icon_storage: "local"
