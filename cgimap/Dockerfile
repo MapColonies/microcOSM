@@ -1,5 +1,3 @@
-
-
 FROM ubuntu:20.04 AS builder
 
 ARG CGIMAP_TAG=v0.8.3
