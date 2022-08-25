@@ -1,15 +1,16 @@
 # CGI map
 
-
 This container contains cgimap - an high performence partial implementation of the osm api
 
-### Configuration
+## Building
 
-Required environment variables:
+### Build argument variables
+- `CGIMAP_TAG` - the version tag of cgimap, defaults to v0.8.3
 
-**Env variables to connect to the vector-tiles-db**
+### Building the container
 
-- `CGIMAP_HOST` e.g `osm-db`
-- `CGIMAP_DBNAME` e.g `osm`
-- `CGIMAP_USER` e.g `postgres`
-- `CGIMAP_PASSWORD` e.g `1234`
+```
+    docker build \
+    --build-arg CGIMAP_TAG=v0.8.8 \
+    -f ./Dockerfile -t cgimap:latest .
+```
