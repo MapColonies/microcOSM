@@ -1,0 +1,83 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: cgimap
+  description: A C++ implementation of some parts of the OpenStreetMap API as an FastCGI process.
+  links:
+    - url: https://github.com/zerebubuth/openstreetmap-cgimap
+      title: Original repository
+  tags:
+  - cpp
+  - fastcgi
+  - wrapper
+spec:
+  type: service
+  lifecycle: production
+  owner: vector-team
+  system: vector-ingestion
+  dependsOn:
+    - resource:default/osm-db
+  providesApis:
+    - osm-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: osm-api
+  title: OpenStreetMap V0.6 
+  description: OSM API for interacting with the OSM database
+  links:
+  - url: https://wiki.openstreetmap.org/wiki/API_v0.6
+    title: API v0.6 docs
+spec:
+  type: other
+  lifecycle: production
+  owner: vector-team
+  system: vector-ingestion
+  definition: external
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openstreetmap-website
+  description: The Ruby on Rails application that powers the OpenStreetMap website and API
+  links:
+  - url: https://www.openstreetmap.org/
+    title: OpenStreetMap
+  - url: https://github.com/openstreetmap/openstreetmap-website
+    title: Original repository
+  tags:
+    - ruby
+spec:
+  type: website
+  lifecycle: production
+  owner: vector-team
+  system: vector-ingestion
+  dependsOn:
+    - resource:default/osm-db
+  providesApis:
+    - osm-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: osm-db
+  description: OSM main DB
+  tags:
+    - postgresql
+spec:
+  type: database
+  owner: vector-team
+  system: vector-ingestion
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: osm-changes
+  description: OSM changes
+  tags:
+  - s3
+spec:
+  type: database
+  owner: vector-team
+  system: vector-ingestion
