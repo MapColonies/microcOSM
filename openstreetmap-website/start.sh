@@ -27,7 +27,7 @@ fi
 sed -i -e "s/export APACHE_RUN_USER=www-data/export APACHE_RUN_USER=$(whoami)/g" /etc/apache2/envvars
 sed -i -e "s/export APACHE_RUN_GROUP=www-data/export APACHE_RUN_GROUP=root/g" /etc/apache2/envvars
 
-sed -i -e 's/id_key: .*/id_key: "'$OAUTH_ID_KEY'"/g' $workdir/config/settings.yml
+sed -i -e 's/id_key: .*/id_application: "'$OAUTH_ID_KEY'"/g' $workdir/config/settings.yml
 
 # Setting up the SERVER_URL and SERVER_PROTOCOL
 sed -i -e "s/server_url: 'localhost'/server_url: '"$SERVER_URL"'/g" $workdir/config/settings.yml
